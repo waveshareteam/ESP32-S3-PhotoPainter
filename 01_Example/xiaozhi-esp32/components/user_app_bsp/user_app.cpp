@@ -20,10 +20,6 @@
 
 #include "i2c_equipment.h"
 
-#define AXP2101_iqr_PIN GPIO_NUM_21
-
-// i2c_equipment_shtc3 *dev_shtc3 = NULL;
-
 SemaphoreHandle_t  epaper_gui_semapHandle = NULL; // Mutual exclusion lock to prevent repeated refreshing
 EventGroupHandle_t epaper_groups;                 // Event group for map refreshing
 EventGroupHandle_t Green_led_Mode_queue = 0;      // Queue for LED blinking, mainly for storing mode parameters
@@ -152,26 +148,10 @@ static void key1_button_user_Task(void *arg) {
     }
 }
 
-void axp2101_irq_init(void) {
-    gpio_config_t gpio_conf = {};
-    gpio_conf.intr_type     = GPIO_INTR_DISABLE;
-    gpio_conf.mode          = GPIO_MODE_OUTPUT;
-    gpio_conf.pin_bit_mask  = ((uint64_t) 0x01 << AXP2101_iqr_PIN);
-    gpio_conf.pull_down_en  = GPIO_PULLDOWN_DISABLE;
-    gpio_conf.pull_up_en    = GPIO_PULLUP_ENABLE;
-
-    ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_config(&gpio_conf));
-    gpio_set_level(AXP2101_iqr_PIN, 0);
-    vTaskDelay(pdMS_TO_TICKS(100));
-    gpio_set_level(AXP2101_iqr_PIN, 1);
-    vTaskDelay(pdMS_TO_TICKS(200));
-}
-
 uint8_t User_Mode_init(void) 
 {
     epaper_gui_semapHandle = xSemaphoreCreateMutex(); /* Acquire the mutual exclusion lock to prevent re-flashing */
     i2c_master_Init();                                /* Must be initialized */
-    //axp2101_irq_init();                             /* AXP2101 Wakeup Settings */
     axp_i2c_prot_init();                              /* AXP2101 Initialization */
     axp_cmd_init();                                   /* Enable the corresponding channel */
     led_init();                                       /* LED Blink Initialization */

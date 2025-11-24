@@ -49,7 +49,7 @@ static void key1_button_user_Task(void *arg) {
                 ret = nvs_set_u8(my_handle, "Mode_Flag", 0x01);
                 ESP_ERROR_CHECK(ret);
                 vTaskDelay(pdMS_TO_TICKS(2));//ESP_LOGE("OK", "5");
-                ESP_LOGE("OK","0x%02x,0x%02x",dev_audio->Get_CodecReg("es8311",0x00),dev_audio->Get_CodecReg("es7210",0x00));
+                ESP_LOGE("es8311&es7210 reg","0x%02x,0x%02x",dev_audio->Get_CodecReg("es8311",0x00),dev_audio->Get_CodecReg("es7210",0x00));
                 //dev_audio->Set_CodecReg("es8311", 0x00, 0x1f);
                 //dev_audio->Set_CodecReg("es7210", 0x00, 0x32);
                 uint8_t regs = dev_audio->Get_CodecReg("es8311",0xfa);
