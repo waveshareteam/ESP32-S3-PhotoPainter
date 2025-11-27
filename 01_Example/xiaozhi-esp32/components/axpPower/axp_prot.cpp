@@ -175,58 +175,17 @@ void axp_cmd_init(void) {
     int reg1 = axp2101.readRegister(0x20);
     int reg2 = axp2101.readRegister(0x21);
     ESP_LOGE("axp2101_init_log","reg_20:0x%02x,reg_21:0x%02x",reg1,reg2);
-    int data = axp2101.readRegister(0x26);
-    ESP_LOGW("axp2101_init_log","reg_26:0x%02x",data);
     int reg3 = axp2101.readRegister(0x00);
     int reg4 = axp2101.readRegister(0x01);
     ESP_LOGE("axp2101_init_log","reg_00:0x%02x,reg_01:0x%02x",reg3,reg4);
-#if 0
-    if(axp2101.getPowerKeyPressOffTime() != XPOWERS_POWEROFF_4S) {
-        axp2101.setPowerKeyPressOffTime(XPOWERS_POWEROFF_4S);
-        ESP_LOGW("axp2101_init_log","Press and hold the pwr button for 4 seconds to shut down the device.");
-    }
-    if(axp2101.getPowerKeyPressOnTime() != XPOWERS_POWERON_128MS) {
-        axp2101.setPowerKeyPressOnTime(XPOWERS_POWERON_128MS);
-        ESP_LOGW("axp2101_init_log","Click PWR to turn on the device.");
-    }
-    if(axp2101.getChargingLedMode() != XPOWERS_CHG_LED_OFF) {
-        axp2101.setChargingLedMode(XPOWERS_CHG_LED_OFF);
-        ESP_LOGW("axp2101_init_log","Disable the CHGLED function.");
-    }
-    if(axp2101.getChargeTargetVoltage() != XPOWERS_AXP2101_CHG_VOL_4V1) {
-        axp2101.setChargeTargetVoltage(XPOWERS_AXP2101_CHG_VOL_4V1);
-        ESP_LOGW("axp2101_init_log","Set the full charge voltage of the battery to 4.1V.");
-    }
-    if(axp2101.getButtonBatteryVoltage() != 3300) {
-        axp2101.setButtonBatteryChargeVoltage(3300);
-        ESP_LOGW("axp2101_init_log","Set Button Battery charge voltage");
-    }
-    if(axp2101.getDC1Voltage() != 3300) {
-        axp2101.setDC1Voltage(3300);
-        ESP_LOGW("axp2101_init_log","Set DCDC1 to output 3V3");
+    if(axp2101.getALDO4Voltage() != 3300) {
+        axp2101.setALDO4Voltage(3300);
+        ESP_LOGW("axp2101_init_log","Set ALDO4 to output 3V3");
     }
     if(axp2101.getALDO3Voltage() != 3300) {
         axp2101.setALDO3Voltage(3300);
         ESP_LOGW("axp2101_init_log","Set ALDO3 to output 3V3");
     }
-    if(axp2101.getALDO4Voltage() != 3300) {
-        axp2101.setALDO4Voltage(3300);
-        ESP_LOGW("axp2101_init_log","Set ALDO4 to output 3V3");
-    }
-    axp2101.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
-    axp2101.clearIrqStatus();
-    axp2101_irq_init();
-    axp2101.enableIRQ(XPOWERS_AXP2101_ALL_IRQ);
-#else
-    if(axp2101.getALDO4Voltage() != 3300) {
-        axp2101.setALDO4Voltage(3300);
-        ESP_LOGW("axp2101_init_log","Set ALDO4 to output 3V3");
-    }
-    //axp2101.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
-    //axp2101.clearIrqStatus();
-    //axp2101_irq_init();
-    //axp2101.enableIRQ(XPOWERS_AXP2101_ALL_IRQ);
-#endif
 }
 
 void axp2101_isCharging_task(void *arg) {

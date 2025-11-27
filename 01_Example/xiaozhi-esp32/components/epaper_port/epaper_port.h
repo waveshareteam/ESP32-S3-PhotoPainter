@@ -25,7 +25,6 @@ Color Index
 #define EPD_7IN3E_WHITE   0x1   /// 001
 #define EPD_7IN3E_YELLOW  0x2   /// 010
 #define EPD_7IN3E_RED     0x3   /// 011
-// #define EPD_7IN3E_ORANGE  0x4   /// 100
 #define EPD_7IN3E_BLUE    0x5   /// 101
 #define EPD_7IN3E_GREEN   0x6   /// 110
 
