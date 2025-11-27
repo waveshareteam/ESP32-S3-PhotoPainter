@@ -222,10 +222,6 @@ void axp_cmd_init(void) {
         axp2101.setALDO4Voltage(3300);
         ESP_LOGW("axp2101_init_log","Set ALDO4 to output 3V3");
     }
-    if(axp2101.getALDO3Voltage() != 3300) {
-        axp2101.setALDO3Voltage(3300);
-        ESP_LOGW("axp2101_init_log","Set ALDO3 to output 3V3");
-    }
     //axp2101.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
     //axp2101.clearIrqStatus();
     //axp2101_irq_init();
