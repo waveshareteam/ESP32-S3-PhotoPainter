@@ -175,8 +175,8 @@ void axp_cmd_init(void) {
     int reg1 = axp2101.readRegister(0x20);
     int reg2 = axp2101.readRegister(0x21);
     ESP_LOGE("axp2101_init_log","reg_20:0x%02x,reg_21:0x%02x",reg1,reg2);
-    int data = axp2101.readRegister(0x28);
-    ESP_LOGW("axp2101_init_log","reg_28:0x%02x",data);
+    int data = axp2101.readRegister(0x26);
+    ESP_LOGW("axp2101_init_log","reg_26:0x%02x",data);
     int reg3 = axp2101.readRegister(0x00);
     int reg4 = axp2101.readRegister(0x01);
     ESP_LOGE("axp2101_init_log","reg_00:0x%02x,reg_01:0x%02x",reg3,reg4);
