@@ -77,7 +77,6 @@ static void boot_button_user_Task(void *arg) {
                     sdcard_Basic_count++;
                     if (sdcard_node != NULL) 
                     {
-                        
                         xEventGroupSetBits(Green_led_Mode_queue,
                                            set_bit_button(6));
                         Green_led_arg                   = 1;
