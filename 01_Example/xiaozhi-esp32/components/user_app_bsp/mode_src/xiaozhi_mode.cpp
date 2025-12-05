@@ -10,13 +10,15 @@
 #include "weather_app.h"
 #include "button_bsp.h"
 #include "list.h"
+#include "i2c_equipment.h"
 
 BaseAIModel *AiModel = NULL;
 WeatherPort WeaPort;
 WeatherData_t *WeatherData = NULL;          
 static list_t *ListHost = NULL;
-char THData[40];
+Shtc3Port *PeraPort = NULL;
 
+char THData[40];
 int                sdcard_bmp_Quantity = 0; // The number of images in the sdcard directory  // Used in Xiaozhi main code
 int                sdcard_doc_count    = 0; // The index of the image  // Used in Xiaozhi main code
 int                is_ai_img           = 1; // If the current process is refreshing, then the AI-generated images cannot be generated
@@ -153,20 +155,20 @@ static void gui_user_Task(void *arg) {
                 {
                     CustomSDPortNode_t *sdcard_Name_node = (CustomSDPortNode_t *) sdcard_node->val;
                     SDPort->SDPort_SetCurrentlyNode(sdcard_node);
-                    ePaperDisplay.EPD_SDcardBmpShakingColor(sdcard_Name_node->sdcard_name);
-                    ePaperDisplay.EPD_Display(NULL);
+                    ePaperDisplay.EPD_SDcardBmpShakingColor(sdcard_Name_node->sdcard_name,0,0);
+                    ePaperDisplay.EPD_Display();
                 }
             } else if (get_bit_button(even, 2)) {                       
                 list_node_t *node = list_at(ListHost, -1);
                 if (node != NULL) {
                     CustomSDPortNode_t *sdcard_Name_node_ai = (CustomSDPortNode_t *) node->val;
                     SDPort->SDPort_SetCurrentlyNode(node);
-                    ePaperDisplay.EPD_SDcardBmpShakingColor(sdcard_Name_node_ai->sdcard_name);
-                    ePaperDisplay.EPD_Display(NULL);
+                    ePaperDisplay.EPD_SDcardBmpShakingColor(sdcard_Name_node_ai->sdcard_name,0,0);
+                    ePaperDisplay.EPD_Display();
                 }
             } else if (get_bit_button(even, 3)) { 
-                ePaperDisplay.EPD_SDcardBmpShakingColor(score_name);
-                ePaperDisplay.EPD_Display(NULL);
+                ePaperDisplay.EPD_SDcardBmpShakingColor(score_name,0,0);
+                ePaperDisplay.EPD_Display();
             }
             xSemaphoreGive(epaper_gui_semapHandle); 
             Green_led_arg = 0;                      
@@ -250,14 +252,12 @@ void ai_Score_Task(void *arg)
             if (sdcard_score == NULL) {
                 sdcard_score = list_new();                                                
                 name_value   = list_score_iterator(ListHost, sdcard_score); 
-                //ESP_LOGE("OK", "OK1");
             }
             if (sdcard_score != NULL) {
                 if (name_value > 0) {
                     list_node_t *sdcard_node = list_at(sdcard_score, _ats); 
                     strcpy(score_name, (char *) sdcard_node->val);          
                     xEventGroupSetBits(epaper_groups, set_bit_button(3));   
-                    //ESP_LOGE("OK", "OK2");
                     _ats++;
                     if (_ats == name_value) {
                         _ats = 0;
@@ -269,7 +269,6 @@ void ai_Score_Task(void *arg)
             list_destroy(sdcard_score);
             sdcard_score = NULL;
             xEventGroupClearBits(ai_IMG_Score_Group, 0x02);
-            //ESP_LOGE("OK", "OK2");
         }
         vTaskDelay(pdMS_TO_TICKS(1000 * 60 * 30)); 
     }
@@ -297,20 +296,21 @@ void pwr_sleep_user_Task(void *arg) {
 }
 
 char* Get_TemperatureHumidity(void) {
-    //shtc3_data_t data = dev_shtc3->readTempHumi();
-    //if(!data.RH || !data.Temp)
-    //return NULL;
-    //snprintf(THData,40,"温度:%.2f,湿度:%.2f",data.Temp,data.RH);
-    //return THData;
+    float t,h;
+    if(PeraPort->Shtc3_ReadTempHumi(&t,&h)) {
+        snprintf(THData,40,"温度:%.2f,湿度:%.2f",t,h);
+        return THData;
+    }
     return NULL;
 }
 
-void User_xiaozhi_app_init(void)                     // Initialization in the Xiaozhi mode
+void User_xiaozhi_app_init(void)                        // Initialization in the Xiaozhi mode
 {
+    PeraPort = new Shtc3Port(I2cBus);
     ListHost = SDPort->SDPort_GetListHost();
     AiModel = new BaseAIModel(SDPort,800,480);
     BaseAIModelConfig_t* AIconfig = AiModel->BaseAIModel_SdcardReadAIModelConfig();
-    if (AIconfig != NULL) {                      //Obtain key, url, model
+    if (AIconfig != NULL) {                             //Obtain key, url, model
         ESP_LOGI("ai_model", "model:%s,key:%s,url:%s", AIconfig->model,AIconfig->key,AIconfig->url);
     } else {
         return;
@@ -321,8 +321,8 @@ void User_xiaozhi_app_init(void)                     // Initialization in the Xi
     str_ai_chat_buff   = (char *) heap_caps_malloc(1024, MALLOC_CAP_SPIRAM);
     ai_IMG_Group       = xEventGroupCreate();
     ai_IMG_Score_Group = xEventGroupCreate();
-    SDPort->SDPort_ScanListDir("/sdcard/05_user_ai_img"); // Place the image data under the linked list
-    sdcard_bmp_Quantity = SDPort->SDPort_GetScanListValue();   // Traverse the linked list to count the number of images
+    SDPort->SDPort_ScanListDir("/sdcard/05_user_ai_img");       // Place the image data under the linked list
+    sdcard_bmp_Quantity = SDPort->SDPort_GetScanListValue();    // Traverse the linked list to count the number of images
     xTaskCreate(gui_user_Task, "gui_user_Task", 6 * 1024, &sdcard_doc_count, 2, NULL);
     xTaskCreate(ai_IMG_Task, "ai_IMG_Task", 6 * 1024, str_ai_chat_buff, 2, NULL);
     xTaskCreate(ai_Score_Task, "ai_Score_Task", 4 * 1024, NULL, 2, NULL);

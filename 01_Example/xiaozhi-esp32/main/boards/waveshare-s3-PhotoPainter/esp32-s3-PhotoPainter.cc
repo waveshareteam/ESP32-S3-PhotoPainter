@@ -24,28 +24,6 @@ class waveshare_PhotoPainter : public WifiBoard {
         ESP_ERROR_CHECK(i2c_master_get_bus_handle(0, &codec_i2c_bus_));
     }
 
-    //void InitializePowerSaveTimer() {
-    //    power_save_timer_ = new PowerSaveTimer(-1, 60, -1);
-    //    power_save_timer_->OnEnterSleepMode([this]() { //sleep
-    //        ESP_LOGE("power", "Fall asleep");
-    //        auto& app = Application::GetInstance();
-    //        app.ToggleChatState();
-    //        app.ToggleChatState();
-    //        gpio_set_level((gpio_num_t) 45, 1);
-    //    });
-    //    power_save_timer_->OnExitSleepMode([this]() { //Exit sleep
-    //        ESP_LOGE("power", "Exit sleep");
-    //        gpio_set_level((gpio_num_t) 45, 0);
-    //    });
-    //    power_save_timer_->OnShutdownRequest([this]() { //Power off
-    //        ESP_LOGE("power", "Power off");
-    //        auto& app = Application::GetInstance();
-    //        app.ToggleChatState();
-    //        app.ToggleChatState();
-    //    });
-    //    power_save_timer_->SetEnabled(true); //Enable the timer
-    //}
-
     void InitializeButtons() {
         boot_button_.OnClick([this]() {
             auto &app = Application::GetInstance();
@@ -129,7 +107,6 @@ class waveshare_PhotoPainter : public WifiBoard {
     waveshare_PhotoPainter()
         : boot_button_(BOOT_BUTTON_GPIO) {
         InitializeCodecI2c();
-        //InitializePowerSaveTimer();
         User_xiaozhi_app_init();
         InitializeButtons();
         InitializeTools();
@@ -151,17 +128,6 @@ class waveshare_PhotoPainter : public WifiBoard {
             AUDIO_INPUT_REFERENCE);
         return &audio_codec;
     }
-
-    //virtual void SetPowerSaveMode(bool enabled) override {
-    //    if (!enabled) {
-    //        power_save_timer_->WakeUp();
-    //    }
-    //    WifiBoard::SetPowerSaveMode(enabled);
-    //}
 };
 
 DECLARE_BOARD(waveshare_PhotoPainter);
-
-/*
-afe_config->agc_init = false;
-*/

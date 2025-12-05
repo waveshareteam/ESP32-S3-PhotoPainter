@@ -28,8 +28,8 @@ static void Network_user_Task(void *arg) {
             if (pdTRUE == xSemaphoreTake(epaper_gui_semapHandle,2000)) {
                 xEventGroupSetBits(Green_led_Mode_queue, set_bit_button(6));
                 Green_led_arg = 1;
-                ePaperDisplay.EPD_SDcardBmpShakingColor("/sdcard/02_sys_ap_img/user_send.bmp");
-                ePaperDisplay.EPD_Display(NULL);  
+                ePaperDisplay.EPD_SDcardBmpShakingColor("/sdcard/02_sys_ap_img/user_send.bmp",0,0);
+                ePaperDisplay.EPD_Display();  
                 xSemaphoreGive(epaper_gui_semapHandle); 
                 Green_led_arg = 0;                      
             }

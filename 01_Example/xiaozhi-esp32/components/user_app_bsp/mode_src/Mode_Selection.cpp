@@ -21,11 +21,11 @@ static void key1_button_user_Task(void *arg) {
                 nvs_handle_t my_handle;
                 ret = nvs_open("PhotoPainter", NVS_READWRITE, &my_handle);
                 ESP_ERROR_CHECK(ret);
-                vTaskDelay(pdMS_TO_TICKS(2));//ESP_LOGE("OK", "1");
+                vTaskDelay(pdMS_TO_TICKS(2));
                 if (Mode == 1) {
                     ret = nvs_set_u8(my_handle, "PhotPainterMode", 0x01);
                     ESP_ERROR_CHECK(ret);
-                    vTaskDelay(pdMS_TO_TICKS(2));//ESP_LOGE("OK", "2");
+                    vTaskDelay(pdMS_TO_TICKS(2));
                 } else if (Mode == 2) {
                     ret = nvs_set_u8(my_handle, "PhotPainterMode", 0x02);
                     ESP_ERROR_CHECK(ret);
@@ -38,12 +38,12 @@ static void key1_button_user_Task(void *arg) {
                 ret = nvs_set_u8(my_handle, "Mode_Flag", 0x01);
                 ESP_ERROR_CHECK(ret);
                 vTaskDelay(pdMS_TO_TICKS(2));
-                ESP_LOGE("OK","0x%02x,0x%02x",AudioPort->Codec_GetCodecReg("es8311",0x00),AudioPort->Codec_GetCodecReg("es7210",0x00));
+                ESP_LOGW("Audio","0x%02x,0x%02x",AudioPort->Codec_GetCodecReg("es8311",0x00),AudioPort->Codec_GetCodecReg("es7210",0x00));
                 uint8_t regs = AudioPort->Codec_GetCodecReg("es8311",0xfa);
-                ESP_LOGE("es8311 reg","0x%02x",regs);
+                ESP_LOGW("es8311 reg","0x%02x",regs);
                 AudioPort->Codec_SetCodecReg("es8311", 0xfa, regs | 0x01);
                 regs = AudioPort->Codec_GetCodecReg("es7210",0x00);
-                ESP_LOGE("es7210 reg","0x%02x",regs);
+                ESP_LOGW("es7210 reg","0x%02x",regs);
                 AudioPort->Codec_SetCodecReg("es7210", 0x00, regs | 0x06);
                 ESP_ERROR_CHECK(nvs_commit(my_handle));
                 nvs_close(my_handle); 

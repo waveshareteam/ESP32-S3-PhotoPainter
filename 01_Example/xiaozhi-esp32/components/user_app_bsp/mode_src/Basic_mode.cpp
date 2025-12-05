@@ -62,8 +62,8 @@ static void boot_button_user_Task(void *arg) {
                         xEventGroupSetBits(Green_led_Mode_queue,set_bit_button(6));
                         Green_led_arg                   = 1;
                         CustomSDPortNode_t *sdcard_Name_node = (CustomSDPortNode_t *) sdcard_node->val;
-                        ePaperDisplay.EPD_SDcardBmpShakingColor(sdcard_Name_node->sdcard_name);
-                        ePaperDisplay.EPD_Display(NULL);
+                        ePaperDisplay.EPD_SDcardBmpShakingColor(sdcard_Name_node->sdcard_name,0,0);
+                        ePaperDisplay.EPD_Display();
                         xSemaphoreGive(epaper_gui_semapHandle); 
                         Green_led_arg = 0;
                         xSemaphoreGive(sleep_Semp); 

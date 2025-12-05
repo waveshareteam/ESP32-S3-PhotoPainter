@@ -53,16 +53,14 @@ class ePaperPort {
     int                 width_;
     int                 height_;
     uint8_t            *DispBuffer = NULL;
-    uint8_t            *DispBuffer180 = NULL;
+    uint8_t            *RotationBuffer = NULL;
     uint8_t            *BmpSrcBuffer = NULL;
-    uint8_t            *QueueCacheBuffer = NULL;
     int                 DisplayLen;
-    uint8_t             (*LandscapeBuffer)[800][3] = NULL;
-    uint8_t             (*PortraitBuffer)[480][3] = NULL;
     int                 src_width;
     int                 src_height;
-
-
+    uint8_t Rotation = 0;                          //0:0 1:90 2:180 3:270
+    uint8_t mirrx = 0;                             
+    uint8_t mirry = 0;
 
     void    Set_ResetIOLevel(uint8_t level);
     void    Set_CSIOLevel(uint8_t level);
@@ -75,24 +73,26 @@ class ePaperPort {
     void    EPD_SendData(uint8_t Data);
     void    EPD_Sendbuffera(uint8_t *Data, int len);
     void    EPD_TurnOnDisplay(void);
-	void 	RotateBMP24bit(const uint8_t *src, uint8_t* dst, int in_width, int in_height, int rotation);
     uint8_t EPD_ColorToePaperColor(uint8_t b,uint8_t g,uint8_t r);
     uint8_t* EPD_ParseBMPImage(const char *path);
-    uint8_t Rotation = 0;                          //0:0 1:90 2:180 3:270
+    uint8_t EPD_GetPixel4(const uint8_t* buf, int width, int x, int y);
+    void    EPD_SetPixel4(uint8_t* buf, int width, int x, int y, uint8_t px);
+    void EPD_Rotate180_Fast(const uint8_t* src, uint8_t* dst, int width, int height);
+    void EPD_Rotate90CCW_Fast(const uint8_t* src, uint8_t* dst, int width, int height);
+    void EPD_Rotate90CW_Fast(const uint8_t* src, uint8_t* dst, int width, int height);
+    void EPD_PixelRotate();
 
-    void PixelRotate180(const uint8_t* src, uint8_t* dst);
   public:
     ePaperPort(int mosi, int scl, int dc, int cs, int rst, int busy, int width, int height, spi_host_device_t spihost = SPI3_HOST);
     ~ePaperPort();
 
     void EPD_Init();
-    void EPD_DispClear(uint8_t *Image, uint8_t color);
     void EPD_DispClear(uint8_t color);
-    void EPD_Display(uint8_t *Image);
     void EPD_Display();
+    void Set_Rotation(uint8_t rot); // 0:no 1:90 2:180 3:270
+    void Set_Mirror(uint8_t mirr_x,uint8_t mirr_y);
     uint8_t* EPD_GetIMGBuffer();
     void EPD_SetPixel(uint16_t x, uint16_t y, uint16_t color);
-    void EPD_SDcardBmpShakingColor(const char *path);
     void EPD_SDcardBmpShakingColor(const char *path,uint16_t x_start, uint16_t y_start);
 	void EPD_DrawStringCN(uint16_t Xstart, uint16_t Ystart, const char * pString, cFONT* font,uint16_t Color_Foreground, uint16_t Color_Background);
 };
