@@ -6,21 +6,12 @@ idf_component_register(
   "mode_src/Mode_Selection.cpp"
   "user_app.cpp" 
   PRIV_REQUIRES 
-  driver 
-  axpPower 
-  epaper_port 
-  epaper_src 
-  i2c_bsp 
-  led_bsp 
-  ListLib
-  sdcard_bsp  
-  button_bsp
-  http_client_bsp
-  json_bsp
+  driver        
   nvs_flash
   esp_wifi
-  http_server_bsp
-  audio_bsp
-  esp32_ai_bsp
   main
+  app_bsp
+  codec_board
+  pmicpower
+  port_bsp
   INCLUDE_DIRS "./")

@@ -34,7 +34,7 @@ extern "C" void app_main(void) {
     if (ret != ESP_OK) {
         ret = nvs_set_u8(my_handle, "PhotPainterMode", 0x03);
         ESP_ERROR_CHECK(ret);
-        nvs_commit(my_handle); //Submit the revisions
+        nvs_commit(my_handle);  //Submit the revisions
         ret = nvs_get_u8(my_handle, "PhotPainterMode", &read_value);
     }
     uint8_t Mode_value;
@@ -42,10 +42,10 @@ extern "C" void app_main(void) {
     if (ret != ESP_OK) {
         ret = nvs_set_u8(my_handle, "Mode_Flag", 0x01);
         ESP_ERROR_CHECK(ret);
-        nvs_commit(my_handle); //Submit the revisions
+        nvs_commit(my_handle);  //Submit the revisions
         ret = nvs_get_u8(my_handle, "Mode_Flag", &Mode_value);
     }
-    nvs_close(my_handle); //Close handle
+    nvs_close(my_handle);       //Close handle
     ESP_LOGI("Mode_value", "%d", Mode_value);
     /*Button Press Task Creation*/
     if (User_Mode_init() == 0) {
@@ -54,18 +54,17 @@ extern "C" void app_main(void) {
     }
 
     if (read_value == 0x03) {
-        printf("Enter xiaozhi mode\n");
-        //Launch the application
+        ESP_LOGW("main","Enter xiaozhi mode");
         auto &app = Application::GetInstance();
         app.Start();
     } else if (read_value == 0x01) {
-        printf("Enter Basic mode\n");
+        ESP_LOGW("main","Enter Basic mode");
         User_Basic_mode_app_init();
     } else if (read_value == 0x02) {
-        printf("Enter Network mode\n");
+        ESP_LOGW("main","Enter Network mode");
         User_Network_mode_app_init();
     } else if (read_value == 0x04) {
-        printf("Enter Mode Selection\n");
+        ESP_LOGW("main","Enter Mode Selection");
         Mode_Selection_Init();
     }
 }

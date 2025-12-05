@@ -1,0 +1,36 @@
+idf_component_register(
+    SRCS 
+    "i2c_bsp.cpp" 
+    "display_bsp.cpp" 
+    "sdcard_bsp.cpp" 
+    "./src/multi_button/multi_button.c" 
+    "button_bsp.c" 
+    "led_bsp.c"
+    "./codec_bsp.cpp"
+    "./i2c_equipment.cpp"
+    "./src/fonts/font14CN.c"
+    "./src/fonts/font18CN.c" 
+    "./src/fonts/font22CN.c"
+    PRIV_REQUIRES 
+    driver
+    esp_timer
+    codec_board 
+    REQUIRES
+    esp_driver_sdmmc
+    fatfs
+    app_bsp
+    INCLUDE_DIRS 
+    "./" 
+    "./src/multi_button"
+    "./src/fonts"
+    EMBED_FILES 
+    "pcm_src/mode.pcm"
+    "pcm_src/mode_1.pcm"
+    "pcm_src/mode_2.pcm"
+    "pcm_src/mode_3.pcm")
+set_source_files_properties(
+    sdcard_bsp.cpp
+    PROPERTIES
+    COMPILE_OPTIONS "-Wno-format-truncation"
+)
+

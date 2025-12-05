@@ -1,0 +1,27 @@
+idf_component_register(
+    SRCS
+    "ai_app.cpp"
+    "jpegdecode_app.cpp"
+    "client_app.c"
+    "server_app.cpp"
+    "./list_src/list_iterator.c"
+    "./list_src/list_node.c"
+    "./list_src/list.c"
+    "weather_app.cpp"
+    "./jpg_src/image_io.c"
+    "./jpg_src/test_decoder.c"
+    PRIV_REQUIRES
+    espressif__esp_new_jpeg 
+    esp_http_client
+    port_bsp
+    esp_wifi
+    esp_http_server
+    json
+    INCLUDE_DIRS 
+    "./" 
+    "./jpg_src"
+    "./json_inc"
+    "./list_src"
+    EMBED_TXTFILES 
+    "./certs/ark_vol.pem"
+    "./certs/volces_chain.pem")

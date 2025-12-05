@@ -1,24 +1,13 @@
-#include "axp_prot.h"
-#include "button_bsp.h"
-#include "esp_heap_caps.h"
-#include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "i2c_bsp.h"
-#include "led_bsp.h"
-#include "sdcard_bsp.h"
-#include "user_app.h"
 #include <stdio.h>
 #include <string.h>
+#include <esp_heap_caps.h>
+#include <nvs_flash.h>
+#include <driver/rtc_io.h>
+#include "user_app.h"
+#include "button_bsp.h"
+#include "codec_bsp.h"
 
-#include "GUI_BMPfile.h"
-#include "GUI_Paint.h"
-#include "epaper_port.h"
-
-#include "nvs_flash.h"
-
-#include "user_audio_bsp.h"
-
-user_audio_bsp *dev_audio = NULL;
+CodecPort *AudioPort = NULL;
 
 EventGroupHandle_t audio_groups;
 
@@ -26,7 +15,7 @@ static void key1_button_user_Task(void *arg) {
     esp_err_t ret;
     uint8_t   Mode = 0;
     for (;;) {
-        EventBits_t even = xEventGroupWaitBits(key_groups, set_bit_all, pdTRUE, pdFALSE, pdMS_TO_TICKS(2000));
+        EventBits_t even = xEventGroupWaitBits(GP4ButtonGroups, set_bit_all, pdTRUE, pdFALSE, pdMS_TO_TICKS(2000));
         if (get_bit_button(even, 1)) {
             if (Mode > 0) {
                 nvs_handle_t my_handle;
@@ -40,29 +29,27 @@ static void key1_button_user_Task(void *arg) {
                 } else if (Mode == 2) {
                     ret = nvs_set_u8(my_handle, "PhotPainterMode", 0x02);
                     ESP_ERROR_CHECK(ret);
-                    vTaskDelay(pdMS_TO_TICKS(2));//ESP_LOGE("OK", "3");
+                    vTaskDelay(pdMS_TO_TICKS(2));
                 } else if (Mode == 3) {
                     ret = nvs_set_u8(my_handle, "PhotPainterMode", 0x03);
                     ESP_ERROR_CHECK(ret);
-                    vTaskDelay(pdMS_TO_TICKS(2));//ESP_LOGE("OK", "4");
+                    vTaskDelay(pdMS_TO_TICKS(2));
                 }
                 ret = nvs_set_u8(my_handle, "Mode_Flag", 0x01);
                 ESP_ERROR_CHECK(ret);
-                vTaskDelay(pdMS_TO_TICKS(2));//ESP_LOGE("OK", "5");
-                ESP_LOGE("OK","0x%02x,0x%02x",dev_audio->Get_CodecReg("es8311",0x00),dev_audio->Get_CodecReg("es7210",0x00));
-                //dev_audio->Set_CodecReg("es8311", 0x00, 0x1f);
-                //dev_audio->Set_CodecReg("es7210", 0x00, 0x32);
-                uint8_t regs = dev_audio->Get_CodecReg("es8311",0xfa);
+                vTaskDelay(pdMS_TO_TICKS(2));
+                ESP_LOGE("OK","0x%02x,0x%02x",AudioPort->Codec_GetCodecReg("es8311",0x00),AudioPort->Codec_GetCodecReg("es7210",0x00));
+                uint8_t regs = AudioPort->Codec_GetCodecReg("es8311",0xfa);
                 ESP_LOGE("es8311 reg","0x%02x",regs);
-                dev_audio->Set_CodecReg("es8311", 0xfa, regs | 0x01);
-                regs = dev_audio->Get_CodecReg("es7210",0x00);
+                AudioPort->Codec_SetCodecReg("es8311", 0xfa, regs | 0x01);
+                regs = AudioPort->Codec_GetCodecReg("es7210",0x00);
                 ESP_LOGE("es7210 reg","0x%02x",regs);
-                dev_audio->Set_CodecReg("es7210", 0x00, regs | 0x06);
+                AudioPort->Codec_SetCodecReg("es7210", 0x00, regs | 0x06);
                 ESP_ERROR_CHECK(nvs_commit(my_handle));
                 nvs_close(my_handle); 
-                vTaskDelay(pdMS_TO_TICKS(300));//ESP_LOGE("OK", "4");
-                dev_audio->Set_CodecReg("es8311", 0xfa, 0x00);
-                dev_audio->Set_CodecReg("es7210", 0x00, 0x32);
+                vTaskDelay(pdMS_TO_TICKS(300));
+                AudioPort->Codec_SetCodecReg("es8311", 0xfa, 0x00);
+                AudioPort->Codec_SetCodecReg("es7210", 0x00, 0x32);
                 esp_restart();
             }
         } else if (get_bit_button(even, 0)) { 
@@ -82,7 +69,7 @@ static void key1_button_user_Task(void *arg) {
 }
 
 static void audio_user_Task(void *arg) {
-    dev_audio->Play_InfoAudio();
+    AudioPort->Codec_PlayInfoAudio();
     int value = 0;
     for (;;) {
         EventBits_t even = xEventGroupWaitBits(audio_groups, set_bit_all, pdTRUE, pdFALSE, pdMS_TO_TICKS(3000));
@@ -96,10 +83,10 @@ static void audio_user_Task(void *arg) {
             value = 3;
         }
         int      bytes_write = 0;
-        int      bytes_sizt  = dev_audio->Get_MusicSizt(value);
-        uint8_t *Music_ptr   = dev_audio->Get_MusicData(value);
+        int      bytes_sizt  = AudioPort->Codec_GetMusicSizt(value);
+        uint8_t *Music_ptr   = AudioPort->Codec_GetMusicData(value);
         do {
-            dev_audio->Play_BackWrite(Music_ptr, 256);
+            AudioPort->Codec_PlayBackWrite(Music_ptr, 256);
             Music_ptr += 256;
             bytes_write += 256;
         } while ((bytes_write < bytes_sizt) && (gpio_get_level(GPIO_NUM_4)));
@@ -107,7 +94,7 @@ static void audio_user_Task(void *arg) {
 }
 
 void Mode_Selection_Init(void) {
-    dev_audio    = new user_audio_bsp();
+    AudioPort    = new CodecPort(I2cBus);
     audio_groups = xEventGroupCreate();
     xEventGroupSetBits(audio_groups, set_bit_button(0));
     xTaskCreate(key1_button_user_Task, "key1_button_user_Task", 4 * 1024, NULL, 3, NULL);
