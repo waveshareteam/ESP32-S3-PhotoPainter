@@ -69,13 +69,17 @@ void Custom_PmicRegisterInit(void) {
         axp2101.setDC1Voltage(3300);
         ESP_LOGW("axp2101_init_log","Set DCDC1 to output 3V3");
     }
+    if(axp2101.getALDO1Voltage() != 3300) {
+        axp2101.setALDO1Voltage(3300);
+        ESP_LOGW("axp2101_init_log","Set ALDO1 to output 3V3");
+    }
+    if(axp2101.getALDO2Voltage() != 3300) {
+        axp2101.setALDO2Voltage(3300);
+        ESP_LOGW("axp2101_init_log","Set ALDO2 to output 3V3");
+    }
     if(axp2101.getALDO3Voltage() != 3300) {
         axp2101.setALDO3Voltage(3300);
         ESP_LOGW("axp2101_init_log","Set ALDO3 to output 3V3");
-    }
-    if(axp2101.getALDO4Voltage() != 3300) {
-        axp2101.setALDO4Voltage(3300);
-        ESP_LOGW("axp2101_init_log","Set ALDO4 to output 3V3");
     }
 }
 
