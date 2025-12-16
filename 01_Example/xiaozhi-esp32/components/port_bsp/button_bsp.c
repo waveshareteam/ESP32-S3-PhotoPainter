@@ -49,14 +49,6 @@ static void on_pwr_single_click(Button *btn_handle) {
     xEventGroupSetBits(PWRButtonGroups, set_bit_button(0));
 }
 
-static void on_pwr_double_click(Button *btn_handle) {
-    xEventGroupSetBits(PWRButtonGroups, set_bit_button(1));
-}
-
-static void on_pwr_long_press_start(Button *btn_handle) {
-    xEventGroupSetBits(PWRButtonGroups, set_bit_button(2));
-}
-
 static void on_gp4_single_click(Button *btn_handle) {
     xEventGroupSetBits(GP4ButtonGroups, set_bit_button(0));
 }
@@ -117,12 +109,12 @@ void Custom_ButtonInit(void) {
     button_attach(&BootButton, BTN_PRESS_UP, on_boot_press_up);                 //Release event
     button_attach(&BootButton, BTN_PRESS_REPEAT, on_boot_press_repeat);         //Continuous click event
     
-    button_init(&PWRButton, read_button_GPIO, BOOT_Active, PWR_ID);           
+    button_init(&PWRButton, read_button_GPIO, PWR_Active, PWR_ID);           
     button_attach(&PWRButton, BTN_SINGLE_CLICK, on_pwr_single_click);         
     //button_attach(&PWRButton, BTN_DOUBLE_CLICK, on_pwr_double_click);         
     //button_attach(&PWRButton, BTN_LONG_PRESS_START, on_pwr_long_press_start);
 
-    button_init(&GP4Button, read_button_GPIO, BOOT_Active, GP4_ID);           
+    button_init(&GP4Button, read_button_GPIO, GP4_Active, GP4_ID);           
     button_attach(&GP4Button, BTN_SINGLE_CLICK, on_gp4_single_click);         
     button_attach(&GP4Button, BTN_DOUBLE_CLICK, on_gp4_double_click);         
     button_attach(&GP4Button, BTN_LONG_PRESS_START, on_gp4_long_press_start);
