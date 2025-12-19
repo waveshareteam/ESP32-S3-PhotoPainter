@@ -9,9 +9,6 @@
 #include "power_bsp.h"
 #include "led_bsp.h"
 
-
-#define AXP2101_iqr_PIN GPIO_NUM_21
-
 CustomSDPort *SDPort = NULL;
 ePaperPort ePaperDisplay(11,10,8,9,12,13,800,480);
 I2cMasterBus I2cBus(48,47,0);

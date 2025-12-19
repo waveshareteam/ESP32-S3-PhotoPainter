@@ -54,11 +54,10 @@ static void boot_button_user_Task(void *arg) {
                         sdcard_Basic_count = 0;
                         sdcard_node        = list_at(ListHost, sdcard_Basic_count);
                     }
-                    ESP_LOGE("node", "%ld", sdcard_Basic_count);
+                    ESP_LOGW("node", "%ld", sdcard_Basic_count);
                     sdcard_Basic_count++;
                     if (sdcard_node != NULL) 
                     {
-                        
                         xEventGroupSetBits(Green_led_Mode_queue,set_bit_button(6));
                         Green_led_arg                   = 1;
                         CustomSDPortNode_t *sdcard_Name_node = (CustomSDPortNode_t *) sdcard_node->val;
@@ -66,7 +65,7 @@ static void boot_button_user_Task(void *arg) {
                         ePaperDisplay.EPD_Display();
                         xSemaphoreGive(epaper_gui_semapHandle); 
                         Green_led_arg = 0;
-                        xSemaphoreGive(sleep_Semp); 
+                        xSemaphoreGive(sleep_Semp);
                         Basic_sleep_arg = 1;
                     }
                 }

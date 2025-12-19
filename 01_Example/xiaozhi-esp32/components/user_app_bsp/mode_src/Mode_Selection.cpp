@@ -15,7 +15,7 @@ static void key1_button_user_Task(void *arg) {
     esp_err_t ret;
     uint8_t   Mode = 0;
     for (;;) {
-        EventBits_t even = xEventGroupWaitBits(GP4ButtonGroups, set_bit_all, pdTRUE, pdFALSE, pdMS_TO_TICKS(2000));
+        EventBits_t even = xEventGroupWaitBits(GP4ButtonGroups, (0x02) | (0x01), pdTRUE, pdFALSE, pdMS_TO_TICKS(2000));
         if (get_bit_button(even, 1)) {
             if (Mode > 0) {
                 nvs_handle_t my_handle;

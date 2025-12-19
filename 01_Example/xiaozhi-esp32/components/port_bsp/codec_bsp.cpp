@@ -40,7 +40,7 @@ i2cbus_(i2cbus)
     i2c_device_config_t dev_cfg = {};
     dev_cfg.dev_addr_length = I2C_ADDR_BIT_LEN_7;
     dev_cfg.device_address  = Es8311Address;
-    dev_cfg.scl_speed_hz    = 400000;
+    dev_cfg.scl_speed_hz    = 100000;
     ESP_ERROR_CHECK(i2c_master_bus_add_device(I2cMasterBus, &dev_cfg, &I2c_DevEs8311));
 
     dev_cfg.device_address  = Es7210Address;

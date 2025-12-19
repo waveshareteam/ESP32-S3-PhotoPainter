@@ -115,7 +115,7 @@ void User_Network_mode_app_init(void) {
     ServerPort_init(SDPort);                                                      
     xEventGroupSetBits(Red_led_Mode_queue,set_bit_button(0)); 
     xTaskCreate(Network_user_Task, "Network_user_Task", 6 * 1024, NULL, 2, NULL);
-    xTaskCreate(Network_sleep_Task, "Network_sleep_Task", 5 * 1024, NULL, 2, NULL);
-    xTaskCreate(pwr_button_user_Task, "pwr_button_user_Task", 5 * 1024, NULL, 2, NULL);
+    xTaskCreate(Network_sleep_Task, "Network_sleep_Task", 4 * 1024, NULL, 2, NULL);
+    xTaskCreate(pwr_button_user_Task, "pwr_button_user_Task", 4 * 1024, NULL, 2, NULL);
     get_wakeup_gpio(); 
 }

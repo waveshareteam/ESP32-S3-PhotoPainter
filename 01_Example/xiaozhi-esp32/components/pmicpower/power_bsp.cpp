@@ -43,6 +43,16 @@ static int AXP2101_SLAVE_Write(uint8_t devAddr, uint8_t regAddr, uint8_t *data, 
     return ret;
 }
 
+void Custom_PmicPortGpioInit() {
+    gpio_config_t io_conf = {};
+    io_conf.intr_type    = GPIO_INTR_DISABLE;
+    io_conf.mode         = GPIO_MODE_INPUT;
+    io_conf.pin_bit_mask = (1ULL << AXP2101_iqr_PIN) | (1ULL << AXP2101_CHGLED_PIN);
+    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    io_conf.pull_up_en   = GPIO_PULLUP_ENABLE;
+    gpio_config(&io_conf);
+}
+
 void Custom_PmicPortInit(I2cMasterBus *i2cbus,uint8_t dev_addr) {
     if(i2cbus_ == NULL) {
         i2cbus_ = i2cbus;
@@ -51,7 +61,7 @@ void Custom_PmicPortInit(I2cMasterBus *i2cbus,uint8_t dev_addr) {
         i2c_master_bus_handle_t BusHandle = i2cbus_->Get_I2cBusHandle();
         i2c_device_config_t     dev_cfg   = {};
         dev_cfg.dev_addr_length           = I2C_ADDR_BIT_LEN_7;
-        dev_cfg.scl_speed_hz              = 300000;
+        dev_cfg.scl_speed_hz              = 100000;
         dev_cfg.device_address            = dev_addr;
         ESP_ERROR_CHECK(i2c_master_bus_add_device(BusHandle, &dev_cfg, &i2cPMICdev));
         i2cPMICAddress = dev_addr;
@@ -61,6 +71,7 @@ void Custom_PmicPortInit(I2cMasterBus *i2cbus,uint8_t dev_addr) {
     } else {
         ESP_LOGE(TAG, "Init PMU FAILED!");
     }
+    Custom_PmicPortGpioInit();
     Custom_PmicRegisterInit();
 }
 
@@ -81,6 +92,30 @@ void Custom_PmicRegisterInit(void) {
         axp2101.setALDO3Voltage(3300);
         ESP_LOGW("axp2101_init_log","Set ALDO3 to output 3V3");
     }
+    if(axp2101.getALDO4Voltage() != 3300) {
+        axp2101.setALDO4Voltage(3300);
+        ESP_LOGW("axp2101_init_log","Set ALDO4 to output 3V3");
+    }
+
+    axp2101.clearIrqStatus();
+    axp2101.enableVbusVoltageMeasure();
+    axp2101.enableBattVoltageMeasure();
+    axp2101.enableSystemVoltageMeasure();
+    axp2101.enableTemperatureMeasure();
+    axp2101.disableTSPinMeasure();
+    axp2101.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
+    axp2101.clearIrqStatus();
+    axp2101.enableIRQ(
+        XPOWERS_AXP2101_BAT_INSERT_IRQ | XPOWERS_AXP2101_BAT_REMOVE_IRQ |    // BATTERY
+        XPOWERS_AXP2101_VBUS_INSERT_IRQ | XPOWERS_AXP2101_VBUS_REMOVE_IRQ |  // VBUS
+        XPOWERS_AXP2101_PKEY_SHORT_IRQ | XPOWERS_AXP2101_PKEY_LONG_IRQ |     // POWER KEY
+        XPOWERS_AXP2101_BAT_CHG_DONE_IRQ | XPOWERS_AXP2101_BAT_CHG_START_IRQ // CHARGE
+    );
+    
+    axp2101.setPrechargeCurr(XPOWERS_AXP2101_PRECHARGE_50MA);
+    axp2101.setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_400MA);
+    axp2101.setChargerTerminationCurr(XPOWERS_AXP2101_CHG_ITERM_25MA);
+    axp2101.setChargeTargetVoltage(XPOWERS_AXP2101_CHG_VOL_4V2);
 }
 
 void Axp2101_isChargingTask(void *arg) {
@@ -104,3 +139,5 @@ void Axp2101_isChargingTask(void *arg) {
         ESP_LOGI(TAG, "getBattVoltage: %d mV", axp2101.getBattVoltage());
     }
 }
+
+
