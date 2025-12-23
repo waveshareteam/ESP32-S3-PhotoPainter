@@ -181,11 +181,11 @@ static void ai_IMG_Task(void *arg) {
     char *chatStr = (char *) arg;
     for (;;) {
         EventBits_t even = xEventGroupWaitBits(ai_IMG_Group, (0x01) | (0x02) | (0x04) | (0x08), pdTRUE, pdFALSE, portMAX_DELAY);
-        
         if (get_bit_button(even, 0)) {
-            ESP_LOGE("chat", "%s", chatStr);
+            ESP_LOGW("chat", "%s", chatStr);
             AiModel->BaseAIModel_SetChat(chatStr);         
-            char *str = AiModel->BaseAIModel_GetImgName(); 
+            char *str = AiModel->BaseAIModel_GetImgName();
+            ESP_LOGW("ai_IMG_Task", "Generated image path: %s", str); 
             if (str != NULL) {
                 CustomSDPortNode_t *sdcard_node_data = (CustomSDPortNode_t *) malloc(sizeof(CustomSDPortNode_t));
                 assert(sdcard_node_data);

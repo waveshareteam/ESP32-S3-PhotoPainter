@@ -40,6 +40,7 @@ private:
     int width_;
     int height_;
     BaseAIModelConfig_t* AIModelConfig;
+    http_response_t AIresponse = {0};
 
     static int BaseAIModel_HttpCallbackFun(esp_http_client_event_t *evt);
     const char* BaseAIModel_GetImgURL();                                            // Obtain the URL of the generated image

@@ -16,14 +16,16 @@ SDPort_(SDPort)
     height_          = height;
     ark_request_body = (char *) heap_caps_malloc(3 * 1024, MALLOC_CAP_SPIRAM);              // Store chat messages
     url_copy         = (char *) heap_caps_malloc(1024, MALLOC_CAP_SPIRAM);                  // Store the URL of the obtained image
-    jpg_buffer       = (uint8_t *) heap_caps_malloc(width * height * 3, MALLOC_CAP_SPIRAM); // Store the JPG data
+    //jpg_buffer       = (uint8_t *) heap_caps_malloc(500 * 1024, MALLOC_CAP_SPIRAM);         // Store the JPG data
     floyd_buffer     = (uint8_t *) heap_caps_malloc(width * height * 3, MALLOC_CAP_SPIRAM); // Store the data after applying the RGB888 jitter algorithm
     AIModelConfig    = (BaseAIModelConfig_t *) heap_caps_malloc(sizeof(BaseAIModelConfig_t),MALLOC_CAP_SPIRAM);
+    AIresponse.buffer = (char *) heap_caps_malloc(500 * 1024,MALLOC_CAP_SPIRAM);
     assert(ark_request_body);
     assert(url_copy);
-    assert(jpg_buffer);
+    //assert(jpg_buffer);
     assert(floyd_buffer);
     assert(AIModelConfig);
+    assert(AIresponse.buffer);
 }
 
 BaseAIModel::BaseAIModel(CustomSDPort *SDPort):
@@ -48,10 +50,10 @@ int BaseAIModel::BaseAIModel_HttpCallbackFun(esp_http_client_event_t *evt) {
     case HTTP_EVENT_ON_DATA:
         if (!esp_http_client_is_chunked_response(evt->client)) {
             int copy_len = evt->data_len;
-            resp->buffer = (char *) realloc(resp->buffer, resp->buffer_len + copy_len + 1);
             memcpy(resp->buffer + resp->buffer_len, evt->data, copy_len);
             resp->buffer_len += copy_len;
             resp->buffer[resp->buffer_len] = '\0';
+            //ESP_LOGW("HTTP_CALLBACK", "Received data length: %d", copy_len);
         }
         break;
     default:
@@ -61,17 +63,16 @@ int BaseAIModel::BaseAIModel_HttpCallbackFun(esp_http_client_event_t *evt) {
 }
 
 const char *BaseAIModel::BaseAIModel_GetImgURL() {
-    http_response_t response;
-
     esp_http_client_config_t config = {};
     config.url                      = url;
     config.event_handler            = BaseAIModel_HttpCallbackFun;
-    config.user_data                = &response;
+    config.user_data                = &AIresponse;
     config.cert_pem                 = (const char *) ark_vol_pem_start;
     esp_http_client_handle_t client = esp_http_client_init(&config);
 
     char auth_header[128];
     snprintf(auth_header, sizeof(auth_header), "Bearer %s", apk);
+    ESP_LOGW(TAG, "apk:%s", auth_header);
 
     esp_http_client_set_method(client, HTTP_METHOD_POST);
     esp_http_client_set_header(client, "Content-Type", "application/json");
@@ -83,50 +84,42 @@ const char *BaseAIModel::BaseAIModel_GetImgURL() {
 
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Ark request failed: %s", esp_err_to_name(err));
-        free(response.buffer);
-        response.buffer = NULL;
+        AIresponse.buffer_len = 0;
         return NULL;
     }
 
-    ESP_LOGE(TAG, "url:%s", url);
-    ESP_LOGE(TAG, "apk:%s", apk);
-    ESP_LOGE(TAG, "model:%s", model);
-    ESP_LOGI(TAG, "Ark response: %s", response.buffer);
-
     JsonDocument         desDoc;
-    DeserializationError error = deserializeJson(desDoc, response.buffer);
-    free(response.buffer);
-    response.buffer = NULL;
+    DeserializationError error = deserializeJson(desDoc, AIresponse.buffer);
 
     if (error) {
         ESP_LOGE(TAG, "JSON parse failed");
+        AIresponse.buffer_len = 0;
         return NULL;
     }
 
     const char *url_str = desDoc["data"][0]["url"];
     if (url_str == NULL) {
+        AIresponse.buffer_len = 0;
         return NULL;
     }
 
-    ESP_LOGI(TAG, "Image URL: %s", url_str);
-
     strcpy(url_copy, url_str);
     url_copy[strlen(url_copy)] = 0;
+
+    AIresponse.buffer_len = 0;
     return url_copy;
 }
 
 uint8_t *BaseAIModel::BaseAIModel_DownloadImgToPsram(const char *strurl, int *out_len) {
-    http_response_t response = {0};
-
     if (strurl == NULL) {
         ESP_LOGE(TAG, "img url NUll");
         return NULL;
     }
-    ESP_LOGE("IMG URL", "%s", strurl);
+    ESP_LOGW("IMG URL", "%s", strurl);
     esp_http_client_config_t config = {};
     config.url                      = strurl;
     config.event_handler            = BaseAIModel_HttpCallbackFun;
-    config.user_data                = &response;
+    config.user_data                = &AIresponse;
     config.cert_pem                 = (const char *) ark_volces_chain_pem_start; // Some URLs may be in https format.
     config.buffer_size              = 4096;                                      // The default size is 1024, which has been increased to 4 KB.
     config.buffer_size_tx           = 2048;                                      // Send buffering
@@ -139,23 +132,23 @@ uint8_t *BaseAIModel::BaseAIModel_DownloadImgToPsram(const char *strurl, int *ou
 
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Image download failed: %s", esp_err_to_name(err));
-        free(response.buffer);
+        AIresponse.buffer_len = 0;
         return NULL;
     }
 
-    if (!jpg_buffer) {
-        ESP_LOGE(TAG, "PSRAM malloc failed, size=%d", response.buffer_len);
-        free(response.buffer);
-        return NULL;
-    }
+    //if (!jpg_buffer) {
+    //    ESP_LOGE(TAG, "PSRAM malloc failed, size=%d", AIresponse.buffer_len);
+    //    return NULL;
+    //}
 
-    memcpy(jpg_buffer, response.buffer, response.buffer_len);
+    //memcpy(jpg_buffer, AIresponse.buffer, AIresponse.buffer_len);
     if (out_len != NULL) {
-        *out_len = response.buffer_len;
+        *out_len = AIresponse.buffer_len;
     }
-    free(response.buffer);
-    ESP_LOGI(TAG, "Image downloaded to PSRAM, size=%d bytes", response.buffer_len);
-    return jpg_buffer;
+    ESP_LOGI(TAG, "Image downloaded to PSRAM, size=%d bytes", AIresponse.buffer_len);
+    //return jpg_buffer;
+    AIresponse.buffer_len = 0;
+    return (uint8_t *)AIresponse.buffer;
 }
 
 uint8_t BaseAIModel::BaseAIModel_PsramToSdcard(char *strPath, uint8_t *buffer, int len) {
@@ -173,8 +166,10 @@ void BaseAIModel::BaseAIModel_SetChat(const char *str) {
     doc["guidance_scale"]  = 3;     //The larger the value, the more relevant the image generation will be.
     doc["watermark"]       = false; //No watermark required
     if (serializeJson(doc, ark_request_body, 3 * 1024) > 0) {
+        ESP_LOGW("AIModel","Body : %s",ark_request_body);
         is_success = true;
     } else {
+        ESP_LOGE("AIModel","Body : NULL");
         is_success = false;
     }
 }
@@ -188,13 +183,14 @@ char *BaseAIModel::BaseAIModel_GetImgName() {
         ESP_LOGE(TAG, "read URL fill");
         return NULL;
     }
+
     int jpg_size = 0;
     if (BaseAIModel_DownloadImgToPsram(url_copy, &jpg_size) == NULL) {
         ESP_LOGE(TAG, "http get img data fill");
         return NULL;
     }
     int dec_jpg_size = 0;
-    if (JpegPort_OnePicture(jpg_buffer, jpg_size, &jpg_dec_buffer, &dec_jpg_size) == 0) {
+    if (JpegPort_OnePicture((uint8_t *)AIresponse.buffer, jpg_size, &jpg_dec_buffer, &dec_jpg_size) == 0) {
         ESP_LOGE(TAG, "jpg dec fill");
         if (jpg_dec_buffer != NULL) {
             JpegPort_BufferFree(jpg_dec_buffer);
@@ -209,6 +205,7 @@ char *BaseAIModel::BaseAIModel_GetImgName() {
         return NULL;
     }
     path_value++;
+
     return sdcard_path;
 }
 
