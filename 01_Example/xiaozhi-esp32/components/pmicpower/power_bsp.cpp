@@ -76,6 +76,8 @@ void Custom_PmicPortInit(I2cMasterBus *i2cbus,uint8_t dev_addr) {
 }
 
 void Custom_PmicRegisterInit(void) {
+    axp2101.setVbusCurrentLimit(XPOWERS_AXP2101_VBUS_CUR_LIM_2000MA);
+
     if(axp2101.getDC1Voltage() != 3300) {
         axp2101.setDC1Voltage(3300);
         ESP_LOGW("axp2101_init_log","Set DCDC1 to output 3V3");
@@ -97,24 +99,25 @@ void Custom_PmicRegisterInit(void) {
         ESP_LOGW("axp2101_init_log","Set ALDO4 to output 3V3");
     }
 
-    axp2101.clearIrqStatus();
-    axp2101.enableVbusVoltageMeasure();
-    axp2101.enableBattVoltageMeasure();
-    axp2101.enableSystemVoltageMeasure();
-    axp2101.enableTemperatureMeasure();
-    axp2101.disableTSPinMeasure();
-    axp2101.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
-    axp2101.clearIrqStatus();
-    axp2101.enableIRQ(
-        XPOWERS_AXP2101_BAT_INSERT_IRQ | XPOWERS_AXP2101_BAT_REMOVE_IRQ |    // BATTERY
-        XPOWERS_AXP2101_VBUS_INSERT_IRQ | XPOWERS_AXP2101_VBUS_REMOVE_IRQ |  // VBUS
-        XPOWERS_AXP2101_PKEY_SHORT_IRQ | XPOWERS_AXP2101_PKEY_LONG_IRQ |     // POWER KEY
-        XPOWERS_AXP2101_BAT_CHG_DONE_IRQ | XPOWERS_AXP2101_BAT_CHG_START_IRQ // CHARGE
-    );
-    axp2101.setPrechargeCurr(XPOWERS_AXP2101_PRECHARGE_50MA);
+    //axp2101.clearIrqStatus();
+    //axp2101.enableVbusVoltageMeasure();
+    //axp2101.enableBattVoltageMeasure();
+    //axp2101.enableSystemVoltageMeasure();
+    //axp2101.enableTemperatureMeasure();
+    //axp2101.disableTSPinMeasure();
+    //axp2101.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
+    //axp2101.clearIrqStatus();
+    //axp2101.enableIRQ(
+    //    XPOWERS_AXP2101_BAT_INSERT_IRQ | XPOWERS_AXP2101_BAT_REMOVE_IRQ |    // BATTERY
+    //    XPOWERS_AXP2101_VBUS_INSERT_IRQ | XPOWERS_AXP2101_VBUS_REMOVE_IRQ |  // VBUS
+    //    XPOWERS_AXP2101_PKEY_SHORT_IRQ | XPOWERS_AXP2101_PKEY_LONG_IRQ |     // POWER KEY
+    //    XPOWERS_AXP2101_BAT_CHG_DONE_IRQ | XPOWERS_AXP2101_BAT_CHG_START_IRQ // CHARGE
+    //);
+
+    axp2101.setPrechargeCurr(XPOWERS_AXP2101_PRECHARGE_200MA);
     axp2101.setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_200MA);
-    axp2101.setChargerTerminationCurr(XPOWERS_AXP2101_CHG_ITERM_25MA);
-    axp2101.setChargeTargetVoltage(XPOWERS_AXP2101_CHG_VOL_4V2);
+    axp2101.setChargerTerminationCurr(XPOWERS_AXP2101_CHG_ITERM_200MA);
+    axp2101.setChargeTargetVoltage(XPOWERS_AXP2101_CHG_VOL_4V1);
 }
 
 void Axp2101_isChargingTask(void *arg) {
