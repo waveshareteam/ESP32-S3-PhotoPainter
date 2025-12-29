@@ -23,16 +23,18 @@ int                sdcard_bmp_Quantity = 0; // The number of images in the sdcar
 int                sdcard_doc_count    = 0; // The index of the image  // Used in Xiaozhi main code
 int                is_ai_img           = 1; // If the current process is refreshing, then the AI-generated images cannot be generated
 EventGroupHandle_t ai_IMG_Group;            // Task group for ai_IMG
-EventGroupHandle_t ai_IMG_Score_Group;      // Task group for polling and playing high-score images by AI in ai_IMG
 
 char   *str_ai_chat_buff = NULL; // This is a text-to-image conversion. The default text length is 1024.
-int     IMG_Score        = 0;    // Score the image
 list_t *sdcard_score     = NULL; // The high-score list requires memory allocation and deallocation
-char    score_name[100];         // Poll the current image
 
 char sleep_buff[18]; 
 
 SemaphoreHandle_t ai_img_while_semap; 
+
+EventGroupHandle_t ai_IMG_LoopGroup;  // AI image loop event group
+int img_loopTimer = 1 * 60 * 1000;    // Default 1 minute
+int img_loopCount = 0;                // Loop count
+
 
 void xiaozhi_init_received(const char *arg1) 
 {
@@ -148,7 +150,8 @@ static void gui_user_Task(void *arg) {
 
                 ePaperDisplay.EPD_Display();
                 //heap_caps_free(WeatherData);
-            } else if (get_bit_button(even, 1)) { 
+            } else if (get_bit_button(even, 1)) {
+                xEventGroupClearBits(ai_IMG_LoopGroup, 0x01);  
                 *sdcard_doc -= 1;
                 list_node_t *sdcard_node = list_at(ListHost, *sdcard_doc); 
                 if (sdcard_node != NULL)                                                 
@@ -158,7 +161,8 @@ static void gui_user_Task(void *arg) {
                     ePaperDisplay.EPD_SDcardBmpShakingColor(sdcard_Name_node->sdcard_name,0,0);
                     ePaperDisplay.EPD_Display();
                 }
-            } else if (get_bit_button(even, 2)) {                       
+            } else if (get_bit_button(even, 2)) { 
+                xEventGroupClearBits(ai_IMG_LoopGroup, 0x01);                       
                 list_node_t *node = list_at(ListHost, -1);
                 if (node != NULL) {
                     CustomSDPortNode_t *sdcard_Name_node_ai = (CustomSDPortNode_t *) node->val;
@@ -166,9 +170,18 @@ static void gui_user_Task(void *arg) {
                     ePaperDisplay.EPD_SDcardBmpShakingColor(sdcard_Name_node_ai->sdcard_name,0,0);
                     ePaperDisplay.EPD_Display();
                 }
-            } else if (get_bit_button(even, 3)) { 
-                ePaperDisplay.EPD_SDcardBmpShakingColor(score_name,0,0);
-                ePaperDisplay.EPD_Display();
+            } else if (get_bit_button(even, 3)) {
+                img_loopCount--;                  
+                list_node_t *node = list_at(ListHost, img_loopCount);
+                if (node != NULL) {
+                    CustomSDPortNode_t *sdcard_Name_node_ai = (CustomSDPortNode_t *) node->val;
+                    SDPort->SDPort_SetCurrentlyNode(node);
+                    ePaperDisplay.EPD_SDcardBmpShakingColor(sdcard_Name_node_ai->sdcard_name,0,0);
+                    ePaperDisplay.EPD_Display();
+                }
+                if(img_loopCount == 0) {
+                    img_loopCount = sdcard_bmp_Quantity;
+                }
             }
             xSemaphoreGive(epaper_gui_semapHandle); 
             Green_led_arg = 0;                      
@@ -180,7 +193,7 @@ static void gui_user_Task(void *arg) {
 static void ai_IMG_Task(void *arg) {
     char *chatStr = (char *) arg;
     for (;;) {
-        EventBits_t even = xEventGroupWaitBits(ai_IMG_Group, (0x01) | (0x02) | (0x04) | (0x08), pdTRUE, pdFALSE, portMAX_DELAY);
+        EventBits_t even = xEventGroupWaitBits(ai_IMG_Group, (0x01) | (0x02) | (0x08), pdTRUE, pdFALSE, portMAX_DELAY);
         if (get_bit_button(even, 0)) {
             ESP_LOGW("chat", "%s", chatStr);
             AiModel->BaseAIModel_SetChat(chatStr);         
@@ -190,18 +203,12 @@ static void ai_IMG_Task(void *arg) {
                 CustomSDPortNode_t *sdcard_node_data = (CustomSDPortNode_t *) malloc(sizeof(CustomSDPortNode_t));
                 assert(sdcard_node_data);
                 strcpy(sdcard_node_data->sdcard_name, str);
-                sdcard_node_data->name_score = 1;
                 list_rpush(ListHost, list_node_new(sdcard_node_data)); 
                 xEventGroupSetBits(epaper_groups, set_bit_button(2));                
             }
         } else if (get_bit_button(even, 1)) {
             sdcard_bmp_Quantity = SDPort->SDPort_GetScanListValue(); 
             xSemaphoreGive(ai_img_while_semap);    
-        } else if (get_bit_button(even, 2)) {
-            list_node_t   *node               = SDPort->SDPort_GetCurrentlyNode();
-            CustomSDPortNode_t *sdcard_curren_node = (CustomSDPortNode_t *) node->val;
-            sdcard_curren_node->name_score    = IMG_Score; 
-            xSemaphoreGive(ai_img_while_semap);            
         } else if (get_bit_button(even, 3)) {              
             auto &app = Application::GetInstance();
             if (strstr(sleep_buff, "idle") != NULL) 
@@ -218,60 +225,6 @@ static void ai_IMG_Task(void *arg) {
         }
     }
     vTaskDelete(NULL);
-}
-
-static int list_score_iterator(list_t *list_data, list_t *list_out_score) 
-{
-    if (list_out_score == NULL || list_data == NULL) {
-        ESP_LOGE("list", "list out fill");
-        return -1;
-    }
-    int              value = 0;
-    list_iterator_t *it    = list_iterator_new(list_data, LIST_HEAD); 
-    list_node_t     *node  = list_iterator_next(it);
-    while (node != NULL) {
-        CustomSDPortNode_t *sdcard_node = (CustomSDPortNode_t *) node->val;
-        if (sdcard_node->name_score >= 3) {
-            char *score = (char *) malloc(100);
-            strcpy(score, sdcard_node->sdcard_name);
-            list_rpush(list_out_score, list_node_new(score)); 
-            value++;
-        }
-        node = list_iterator_next(it);
-    }
-    return value;
-}
-
-void ai_Score_Task(void *arg) 
-{
-    int name_value = 0;
-    int _ats       = 0;
-    for (;;) {
-        EventBits_t even = xEventGroupWaitBits(ai_IMG_Score_Group, (0x01) | (0x02), pdFALSE, pdFALSE, pdMS_TO_TICKS(2000));
-        if (get_bit_button(even, 0)) {
-            if (sdcard_score == NULL) {
-                sdcard_score = list_new();                                                
-                name_value   = list_score_iterator(ListHost, sdcard_score); 
-            }
-            if (sdcard_score != NULL) {
-                if (name_value > 0) {
-                    list_node_t *sdcard_node = list_at(sdcard_score, _ats); 
-                    strcpy(score_name, (char *) sdcard_node->val);          
-                    xEventGroupSetBits(epaper_groups, set_bit_button(3));   
-                    _ats++;
-                    if (_ats == name_value) {
-                        _ats = 0;
-                    }
-                }
-            }
-        } else if (get_bit_button(even, 1)) { 
-            
-            list_destroy(sdcard_score);
-            sdcard_score = NULL;
-            xEventGroupClearBits(ai_IMG_Score_Group, 0x02);
-        }
-        vTaskDelay(pdMS_TO_TICKS(1000 * 60 * 30)); 
-    }
 }
 
 void key_wakeUp_user_Task(void *arg) {
@@ -304,6 +257,16 @@ char* Get_TemperatureHumidity(void) {
     return NULL;
 }
 
+void ai_IMG_LoopTask(void *arg) {
+    for (;;) {
+        EventBits_t even = xEventGroupWaitBits(ai_IMG_LoopGroup, (0x01), pdFALSE, pdFALSE, portMAX_DELAY);
+        if (get_bit_button(even, 0)) {
+            xEventGroupSetBits(epaper_groups, set_bit_button(3)); 
+        }
+        vTaskDelay(pdMS_TO_TICKS(img_loopTimer));
+    }
+}
+
 void User_xiaozhi_app_init(void)                        // Initialization in the Xiaozhi mode
 {
     PeraPort = new Shtc3Port(I2cBus);
@@ -320,12 +283,13 @@ void User_xiaozhi_app_init(void)                        // Initialization in the
     ai_img_while_semap = xSemaphoreCreateBinary();
     str_ai_chat_buff   = (char *) heap_caps_malloc(1024, MALLOC_CAP_SPIRAM);
     ai_IMG_Group       = xEventGroupCreate();
-    ai_IMG_Score_Group = xEventGroupCreate();
+    ai_IMG_LoopGroup       = xEventGroupCreate();
     SDPort->SDPort_ScanListDir("/sdcard/05_user_ai_img");       // Place the image data under the linked list
     sdcard_bmp_Quantity = SDPort->SDPort_GetScanListValue();    // Traverse the linked list to count the number of images
+    img_loopCount = sdcard_bmp_Quantity;
     xTaskCreate(gui_user_Task, "gui_user_Task", 6 * 1024, &sdcard_doc_count, 2, NULL);
     xTaskCreate(ai_IMG_Task, "ai_IMG_Task", 6 * 1024, str_ai_chat_buff, 2, NULL);
-    xTaskCreate(ai_Score_Task, "ai_Score_Task", 4 * 1024, NULL, 2, NULL);
+    xTaskCreate(ai_IMG_LoopTask, "ai_IMG_LoopTask", 4 * 1024, NULL, 2, NULL);
     xTaskCreate(key_wakeUp_user_Task, "key_wakeUp_user_Task", 4 * 1024, NULL, 3, NULL); 
     xTaskCreate(pwr_sleep_user_Task, "pwr_sleep_user_Task", 4 * 1024, NULL, 3, NULL);   
 }

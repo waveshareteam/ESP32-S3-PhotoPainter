@@ -40,13 +40,12 @@ class waveshare_PhotoPainter : public WifiBoard {
             int value = properties["value"].value<int>();
             ESP_LOGE("vlaue", "%d", value);
             sdcard_doc_count = value;
-            xEventGroupClearBits(ai_IMG_Score_Group, 0x01); //There is no need to poll for photos anymore.
             xEventGroupSetBits(epaper_groups, 0x02);        //  0000  0010
             return true;
         });
 
         mcp_server.AddTool("self.disp.getNumberimages", "获取 SD 卡中存储的图片文件总数，无输入参数，返回整数类型的图片数量", PropertyList(), [this](const PropertyList &) -> ReturnValue {
-            xEventGroupSetBits(ai_IMG_Group, 0x02); //Retrieve the images from the SD card
+            xEventGroupSetBits(ai_IMG_Group, 0x02);       //Retrieve the images from the SD card
             if (xSemaphoreTake(ai_img_while_semap, pdMS_TO_TICKS(2000)) == pdTRUE) {
                 return sdcard_bmp_Quantity;
             } else {
@@ -60,38 +59,41 @@ class waveshare_PhotoPainter : public WifiBoard {
                 ESP_LOGE("MCP", "is_ai_img fill %d", is_ai_img);
                 return false;
             }
-            xEventGroupClearBits(ai_IMG_Score_Group, 0x01); //There is no need to poll for photos anymore.
             xEventGroupSetBits(ai_IMG_Group, 0x01);         //Indicates that access to the volcano is permitted to obtain IMG.
-            return true;
-        });
-
-        mcp_server.AddTool("self.disp.Score", "对当前显示的图片进行评分，支持整数分数（如 “打 5 分”）或语义评价（如 “非常好看”“不好看”），输入参数为评分值或评价文本，用于记录图片评分数据", PropertyList({Property("value", kPropertyTypeInteger, 0, 5)}), [this](const PropertyList &properties) -> ReturnValue {
-            ESP_LOGI("MCP", "进入MCP Score");
-            IMG_Score = properties["value"].value<int>();
-            xEventGroupSetBits(ai_IMG_Group, 0x04); //Assign a score
-            if (xSemaphoreTake(ai_img_while_semap, pdMS_TO_TICKS(2000)) == pdTRUE) {
-                xEventGroupClearBits(ai_IMG_Score_Group, 0x01); //There is no need to poll for photos anymore.
-                return true;
-            }
-            return false;
-        });
-
-        mcp_server.AddTool("self.disp.lunScore", "启动高分图片轮询播放模式，自动筛选评分高的图片并循环展示，无参数，持续播放直到手动停止", PropertyList(), [this](const PropertyList &) -> ReturnValue {
-            ESP_LOGI("MCP", "进入MCP lunScore");
-            xEventGroupSetBits(ai_IMG_Score_Group, 0x01); //Poll to display high-quality images
-            return true;
-        });
-
-        mcp_server.AddTool("self.disp.resetScore", "将所有图片的评分数据重置为初始状态，无参数，清除历史评分记录", PropertyList(), [this](const PropertyList &) -> ReturnValue {
-            ESP_LOGI("MCP", "进入MCP resetScore");
-            xEventGroupClearBits(ai_IMG_Score_Group, 0x01); //There is no need to poll for photos anymore.
-            xEventGroupSetBits(ai_IMG_Score_Group, 0x02);   //Reset the score
             return true;
         });
 
         mcp_server.AddTool("self.disp.isSLeep", "使设备进入低功耗睡眠模式，关闭显示等非必要功能以节省电量，无参数，执行后设备进入休眠状态", PropertyList(), [this](const PropertyList &) -> ReturnValue {
             ESP_LOGI("MCP", "进入MCP isSLeep");
             xEventGroupSetBits(ai_IMG_Group, 0x08); //Low-power mode
+            return true;
+        });
+
+        mcp_server.AddTool("self.disp.imgloop", "进入轮询播放图片模式", PropertyList(), [this](const PropertyList &) -> ReturnValue {
+            ESP_LOGI("MCP", "进入imgloop");
+            xEventGroupSetBits(ai_IMG_LoopGroup, 0x01); 
+            return true;
+        });
+
+        mcp_server.AddTool("self.disp.imgloopEit", "退出轮询播放图片模式", PropertyList(), [this](const PropertyList &) -> ReturnValue {
+            ESP_LOGI("MCP", "进入imgloopEit");
+            xEventGroupClearBits(ai_IMG_LoopGroup, 0x01); 
+            return true;
+        });
+
+        mcp_server.AddTool("self.disp.imgsetTimerloop min", "设置轮询间隔时间,单位是分钟", PropertyList({Property("timer", kPropertyTypeInteger, 1, 60)}), [this](const PropertyList &properties) -> ReturnValue {
+            ESP_LOGI("MCP", "进入imgsetTimerloop");
+            int value = properties["timer"].value<int>();
+            ESP_LOGE("min timer", "%d", value);
+            img_loopTimer = value * 60 * 1000;
+            return true;
+        });
+
+        mcp_server.AddTool("self.disp.imgsetTimerloop h", "设置轮询间隔时间,单位是小时", PropertyList({Property("timer", kPropertyTypeInteger, 1, 240)}), [this](const PropertyList &properties) -> ReturnValue {
+            ESP_LOGI("MCP", "进入imgsetTimerloop");
+            int value = properties["timer"].value<int>();
+            ESP_LOGE("h timer", "%d", value);
+            img_loopTimer = value * 3600 * 1000;
             return true;
         });
 

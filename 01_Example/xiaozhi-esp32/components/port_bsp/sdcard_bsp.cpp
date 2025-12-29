@@ -194,7 +194,6 @@ void CustomSDPort::SDPort_ScanListDir(const char *path) {
                 ESP_LOGE(TAG, "scan file fill _strlen:%d", _strlen);
                 continue;
             }
-            node_data->name_score = 0;
             snprintf(node_data->sdcard_name, sizeof(node_data->sdcard_name) - 2, "%s/%s", path, entry->d_name); 
             list_rpush(ScanListHandle, list_node_new(node_data));                                       
         }

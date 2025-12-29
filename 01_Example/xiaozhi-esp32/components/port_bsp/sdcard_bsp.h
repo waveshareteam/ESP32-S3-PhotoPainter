@@ -8,8 +8,7 @@
 
 typedef struct
 {
-    char sdcard_name[100];
-	int name_score;       
+    char sdcard_name[100];  
 }CustomSDPortNode_t;
 
 class CustomSDPort

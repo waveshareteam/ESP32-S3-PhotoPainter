@@ -15,9 +15,10 @@ extern EventGroupHandle_t Green_led_Mode_queue;
 extern EventGroupHandle_t Red_led_Mode_queue; 
 extern SemaphoreHandle_t epaper_gui_semapHandle;
 extern uint8_t Green_led_arg;           
-extern uint8_t Red_led_arg;             
+extern uint8_t Red_led_arg;
+extern int img_loopTimer;            
 extern EventGroupHandle_t epaper_groups;
-
+extern EventGroupHandle_t ai_IMG_LoopGroup;
 
 void User_xiaozhi_app_init(void); // init
 void xiaozhi_init_received(const char *arg1);
@@ -28,9 +29,7 @@ extern int sdcard_bmp_Quantity;
 extern int sdcard_doc_count; 
 extern int is_ai_img;        
 extern EventGroupHandle_t ai_IMG_Group;
-extern int IMG_Score; 
-extern SemaphoreHandle_t ai_img_while_semap; 
-extern EventGroupHandle_t ai_IMG_Score_Group; 
+extern SemaphoreHandle_t ai_img_while_semap;
 
 
 void User_Basic_mode_app_init(void);
