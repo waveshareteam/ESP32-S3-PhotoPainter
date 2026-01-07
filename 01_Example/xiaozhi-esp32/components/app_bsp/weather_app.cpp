@@ -200,10 +200,8 @@ char* WeatherPort::WeatherPort_GetSdCardImageName(const char *instr) {
         strcpy(DirectoryImgName, "/sdcard/01_sys_init_img/06_xiaxue.bmp");
     } else if (!strcmp("中雨", instr)) {
         strcpy(DirectoryImgName, "/sdcard/01_sys_init_img/07_zhongyu.bmp");
-    } else if (!strcmp("阴", instr)) {
-        strcpy(DirectoryImgName, "/sdcard/01_sys_init_img/08_yin.bmp");
     } else {
-        strcpy(DirectoryImgName, "/sdcard/01_sys_init_img/qin.bmp");
+        strcpy(DirectoryImgName, "/sdcard/01_sys_init_img/08_yin.bmp");
     }
     return DirectoryImgName;
 }

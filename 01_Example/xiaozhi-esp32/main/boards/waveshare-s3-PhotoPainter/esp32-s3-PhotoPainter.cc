@@ -63,12 +63,6 @@ class waveshare_PhotoPainter : public WifiBoard {
             return true;
         });
 
-        mcp_server.AddTool("self.disp.isSLeep", "使设备进入低功耗睡眠模式，关闭显示等非必要功能以节省电量，无参数，执行后设备进入休眠状态", PropertyList(), [this](const PropertyList &) -> ReturnValue {
-            ESP_LOGI("MCP", "进入MCP isSLeep");
-            xEventGroupSetBits(ai_IMG_Group, 0x08); //Low-power mode
-            return true;
-        });
-
         mcp_server.AddTool("self.disp.imgloop", "进入轮询播放图片模式", PropertyList(), [this](const PropertyList &) -> ReturnValue {
             ESP_LOGI("MCP", "进入imgloop");
             xEventGroupSetBits(ai_IMG_LoopGroup, 0x01); 
