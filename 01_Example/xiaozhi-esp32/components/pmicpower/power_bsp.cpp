@@ -100,7 +100,7 @@ void Custom_PmicRegisterInit(void) {
     }
 
     axp2101.setPrechargeCurr(XPOWERS_AXP2101_PRECHARGE_50MA);
-    axp2101.setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_500MA);
+    axp2101.setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_200MA);
     axp2101.setChargerTerminationCurr(XPOWERS_AXP2101_CHG_ITERM_50MA);
 }
 

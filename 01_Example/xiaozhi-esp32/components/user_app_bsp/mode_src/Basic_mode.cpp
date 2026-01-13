@@ -34,7 +34,7 @@ static void pwr_button_user_Task(void *arg) {
             ESP_ERROR_CHECK(esp_sleep_enable_ext1_wakeup_io(ext_wakeup_pin_1_mask | ext_wakeup_pin_3_mask, ESP_EXT1_WAKEUP_ANY_LOW)); 
             ESP_ERROR_CHECK(rtc_gpio_pulldown_dis(ext_wakeup_pin_3));
             ESP_ERROR_CHECK(rtc_gpio_pullup_en(ext_wakeup_pin_3));
-            esp_sleep_enable_timer_wakeup(basic_rtc_set_time * 1000 * 1000);
+            esp_sleep_enable_timer_wakeup((uint64_t)basic_rtc_set_time * 1000000ULL);
             vTaskDelay(pdMS_TO_TICKS(500));
             esp_deep_sleep_start(); 
         }
@@ -84,7 +84,7 @@ static void default_sleep_user_Task(void *arg) {
                 ESP_ERROR_CHECK(esp_sleep_enable_ext1_wakeup_io(ext_wakeup_pin_1_mask | ext_wakeup_pin_3_mask,ESP_EXT1_WAKEUP_ANY_LOW)); 
                 ESP_ERROR_CHECK(rtc_gpio_pulldown_dis(ext_wakeup_pin_3));
                 ESP_ERROR_CHECK(rtc_gpio_pullup_en(ext_wakeup_pin_3));
-                esp_sleep_enable_timer_wakeup(basic_rtc_set_time * 1000 * 1000);
+                esp_sleep_enable_timer_wakeup((uint64_t)basic_rtc_set_time * 1000000ULL);
                 vTaskDelay(pdMS_TO_TICKS(500));
                 esp_deep_sleep_start();  
             }
@@ -114,14 +114,20 @@ void User_Basic_mode_app_init(void) {
     BaseAIModel model(SDPort);
     xEventGroupSetBits(Red_led_Mode_queue, set_bit_button(0));  
     BaseAIModelConfig_t *AIModelConfig = NULL;
-    if ((13 * 60) == basic_rtc_set_time) {
-        AIModelConfig = model.BaseAIModel_SdcardReadAIModelConfig();
-        if (AIModelConfig != NULL) {                            
-            basic_rtc_set_time = AIModelConfig->time;
-            ESP_LOGI("TIMER", "basic_rtc_set_time:%d", basic_rtc_set_time);
-        }
+    //if ((13 * 60) == basic_rtc_set_time) {
+    //    AIModelConfig = model.BaseAIModel_SdcardReadAIModelConfig();
+    //    if (AIModelConfig != NULL) {                            
+    //        basic_rtc_set_time = AIModelConfig->time;
+    //        ESP_LOGI("TIMER", "basic_rtc_set_time:%d", basic_rtc_set_time);
+    //    }
+    //}
+    AIModelConfig = model.BaseAIModel_SdcardReadAIModelConfig();
+    if (AIModelConfig != NULL) {                            
+        basic_rtc_set_time = AIModelConfig->time;
+        ESP_LOGI("TIMER", "basic_rtc_set_time:%d", basic_rtc_set_time);
     }
-    SDPort->SDPort_ScanListDir("/sdcard/06_user_foundation_img");    
+    SDPort->SDPort_ScanListDir("/sdcard/06_user_foundation_img");   
+    ESP_LOGW("Basic_mode","sdcard IMG value : %d",SDPort->Get_Sdcard_ImgValue());
     xTaskCreate(boot_button_user_Task, "boot_button_user_Task", 6 * 1024, &wakeup_basic_flag, 3, NULL);
     xTaskCreate(pwr_button_user_Task, "pwr_button_user_Task", 4 * 1024, NULL, 3, NULL);
     xTaskCreate(default_sleep_user_Task, "default_sleep_user_Task", 4 * 1024, &Basic_sleep_arg, 3, NULL); 

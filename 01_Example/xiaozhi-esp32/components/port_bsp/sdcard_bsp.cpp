@@ -6,6 +6,8 @@
 #include <freertos/FreeRTOS.h>
 #include "sdcard_bsp.h"
 
+static uint16_t ImgValue = 0;
+
 CustomSDPort::CustomSDPort(const char *SdName,int clk,int cmd,int d0,int d1,int d2,int d3,int width) :
 SdName_(SdName)
 {
@@ -195,7 +197,8 @@ void CustomSDPort::SDPort_ScanListDir(const char *path) {
                 continue;
             }
             snprintf(node_data->sdcard_name, sizeof(node_data->sdcard_name) - 2, "%s/%s", path, entry->d_name); 
-            list_rpush(ScanListHandle, list_node_new(node_data));                                       
+            list_rpush(ScanListHandle, list_node_new(node_data)); 
+            ImgValue++;                                      
         }
     }
     closedir(dir);
@@ -215,4 +218,8 @@ void CustomSDPort::SDPort_SetCurrentlyNode(list_node_t *node) {
 
 list_node_t* CustomSDPort::SDPort_GetCurrentlyNode(void) {
     return CurrentlyNode;
+}
+
+uint16_t CustomSDPort::Get_Sdcard_ImgValue(void) {
+    return ImgValue;
 }

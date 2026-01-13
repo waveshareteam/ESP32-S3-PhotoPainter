@@ -8,7 +8,7 @@
 
 typedef struct
 {
-    char sdcard_name[100];  
+    char sdcard_name[50];  
 }CustomSDPortNode_t;
 
 class CustomSDPort
@@ -37,5 +37,5 @@ public:
 
     void SDPort_SetCurrentlyNode(list_node_t *node);
     list_node_t* SDPort_GetCurrentlyNode(void);
-
+    uint16_t Get_Sdcard_ImgValue(void);
 };

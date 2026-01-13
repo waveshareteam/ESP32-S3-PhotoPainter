@@ -39,7 +39,7 @@ static void Boot_ButtonLoopTask(void *arg) {
       if (flags) {
         flags = 0;
         xEventGroupSetBits(led_groups, 0x01);
-        EPDPort.EPD_SDcardBmpShakingColor("/sdcard/06_user_foundation_img/2.bmp");
+        EPDPort.EPD_SDcardBmpShakingColor("/sdcard/06_user_foundation_img/4.bmp");
         EPDPort.EPD_Display(EPDPort.EPD_GetIMGBuffer());
         xEventGroupClearBits(led_groups, 0x01);
         flags = 1;
