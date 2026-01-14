@@ -45,8 +45,16 @@ void xiaozhi_init_received(const char *arg1)
         Oneime          = 1;
         const char *str = auto_get_weather_json();
         // ESP_LOGE("str","%s",str);
-        WeatherData = WeaPort.WeatherPort_DecodingSring(str);
-        xEventGroupSetBits(Red_led_Mode_queue, set_bit_button(0)); 
+        xEventGroupSetBits(Red_led_Mode_queue, set_bit_button(0));
+        if(str == NULL) {
+            ESP_LOGE("xiaozhi_init","json decoding failed");
+            return;
+        }
+        WeatherData = WeaPort.WeatherPort_DecodingSring(str);      
+        if(WeatherData == NULL) {
+            ESP_LOGE("xiaozhi_init","WeatherData is NULL");
+            return;
+        }     
         xEventGroupSetBits(epaper_groups, set_bit_button(0));
     }
 }
@@ -198,8 +206,8 @@ static void ai_IMG_Task(void *arg) {
             ESP_LOGW("chat", "%s", chatStr);
             AiModel->BaseAIModel_SetChat(chatStr);         
             char *str = AiModel->BaseAIModel_GetImgName();
-            ESP_LOGW("ai_IMG_Task", "Generated image path: %s", str); 
             if (str != NULL) {
+                ESP_LOGW("ai_IMG_Task", "Generated image path: %s", str); 
                 CustomSDPortNode_t *sdcard_node_data = (CustomSDPortNode_t *) malloc(sizeof(CustomSDPortNode_t));
                 assert(sdcard_node_data);
                 strcpy(sdcard_node_data->sdcard_name, str);

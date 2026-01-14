@@ -21,7 +21,7 @@ char city[64]     = {0};
 extern const char api_root_cert_pem_start[] asm("_binary_api_root_cert_pem_start");
 extern const char api_root_cert_pem_end[] asm("_binary_api_root_cert_pem_end");
 
-#define MAX_HTTP_OUTPUT_BUFFER (1024 * 5)
+#define MAX_HTTP_OUTPUT_BUFFER (1024 * 6)
 #define UserDateURL "http://t.weather.sojson.com/api/weather/city/101280601"
 #define AMAP_IP_URL "http://restapi.amap.com/v3/ip?key=0113a13c88697dcea6a445584d535837"
 

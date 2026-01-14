@@ -37,7 +37,7 @@ esp_err_t get_html_callback(httpd_req_t *req) {
     if (buf_len > 1) {
         buf = (char *) malloc(buf_len);
         if (httpd_req_get_hdr_value_str(req, "Host", buf, buf_len) == ESP_OK) {
-            ESP_LOGI(TAG, "Found header => Host: %s", buf);
+            ESP_LOGI(TAG, "Found header => Host: %s URL ==> %s", buf,uri);
         }
         free(buf);
         buf = NULL;
@@ -47,11 +47,11 @@ esp_err_t get_html_callback(httpd_req_t *req) {
     char  *resp_str      = (char *) heap_caps_malloc(SEND_LEN_MAX + 1, MALLOC_CAP_SPIRAM);
     size_t str_respLen   = 0;
     size_t str_len       = 0;
-    char   Name_str[125] = {""};
-    snprintf(Name_str, sizeof(Name_str), "/sdcard/03_sys_ap_html%.100s", uri);
+    //char   Name_str[125] = {""};
+    //snprintf(Name_str, sizeof(Name_str), "/sdcard/03_sys_ap_html%.100s", uri);
     httpd_resp_set_type(req, "text/html");
     while (1) {
-        str_len = SDPort_->SDPort_ReadOffset(Name_str,resp_str,SEND_LEN_MAX,str_respLen);
+        str_len = SDPort_->SDPort_ReadOffset("/sdcard/03_sys_ap_html/index.html",resp_str,SEND_LEN_MAX,str_respLen);
         if (str_len) {
             httpd_resp_send_chunk(req, resp_str, str_len); //Send data
             str_respLen += str_len;
@@ -78,7 +78,7 @@ esp_err_t get_css_callback(httpd_req_t *req) {
     if (buf_len > 1) {
         buf = (char *) malloc(buf_len);
         if (httpd_req_get_hdr_value_str(req, "Host", buf, buf_len) == ESP_OK) {
-            ESP_LOGI(TAG, "Found header => Host: %s", buf);
+            ESP_LOGI(TAG, "Found header => Host: %s URL ==> %s", buf,uri);
         }
         free(buf);
         buf = NULL;
@@ -119,7 +119,7 @@ esp_err_t get_js_callback(httpd_req_t *req) {
     if (buf_len > 1) {
         buf = (char *) malloc(buf_len);
         if (httpd_req_get_hdr_value_str(req, "Host", buf, buf_len) == ESP_OK) {
-            ESP_LOGI(TAG, "Found header => Host: %s", buf);
+            ESP_LOGI(TAG, "Found header => Host: %s URL ==> %s", buf,uri);
         }
         free(buf);
         buf = NULL;
