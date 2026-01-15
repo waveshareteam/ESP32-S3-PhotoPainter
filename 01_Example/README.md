@@ -1,4 +1,4 @@
-v1.2.1 
-1.(中文版本)采用语音控制轮询播放图片,语音设置播放的间隔时间<br>
-2.优化获取天气失败一直重启问题<br>
-3.优化模式1间隔时间溢出问题<br>
+English version of the v1.2.1 main branch
+1. (Chinese version) Use voice control to poll and play pictures. Set the interval time for playback through voice.<br>
+2. Optimize the issue where the device keeps restarting when failed to obtain weather information.<br>
+3. Optimize the problem of overflow in the interval time of mode 1.<br>
