@@ -125,5 +125,3 @@ void Axp2101_isChargingTask(void *arg) {
         ESP_LOGI(TAG, "getBattVoltage: %d mV", axp2101.getBattVoltage());
     }
 }
-
-

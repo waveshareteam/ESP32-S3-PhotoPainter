@@ -21,6 +21,7 @@ private:
     list_t *ScanListHandle = NULL;
 
     list_node_t *CurrentlyNode = NULL; 
+    uint16_t ImgValue = 0;
 public:
     CustomSDPort(const char *SdName,int clk = 39,int cmd = 41,int d0 = 40,int d1 = 1,int d2 = 2,int d3 = 38,int width = 4);
     ~CustomSDPort();
