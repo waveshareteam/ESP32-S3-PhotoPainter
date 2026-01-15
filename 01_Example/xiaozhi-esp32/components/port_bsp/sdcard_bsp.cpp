@@ -6,8 +6,6 @@
 #include <freertos/FreeRTOS.h>
 #include "sdcard_bsp.h"
 
-static uint16_t ImgValue = 0;
-
 CustomSDPort::CustomSDPort(const char *SdName,int clk,int cmd,int d0,int d1,int d2,int d3,int width) :
 SdName_(SdName)
 {
