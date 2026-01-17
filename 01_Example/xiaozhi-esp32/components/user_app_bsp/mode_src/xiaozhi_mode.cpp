@@ -12,6 +12,8 @@
 #include "list.h"
 #include "i2c_equipment.h"
 
+//#include "esp_mac.h"
+
 BaseAIModel *AiModel = NULL;
 WeatherPort WeaPort;
 WeatherData_t *WeatherData = NULL;          
@@ -44,7 +46,7 @@ void xiaozhi_init_received(const char *arg1)
     if (strstr(arg1, "版本") != NULL) {
         Oneime          = 1;
         const char *str = auto_get_weather_json();
-        // ESP_LOGE("str","%s",str);
+        ESP_LOGW("xiaozhi_init","received arg:%s",arg1);
         xEventGroupSetBits(Red_led_Mode_queue, set_bit_button(0));
         if(str == NULL) {
             ESP_LOGE("xiaozhi_init","json decoding failed");
@@ -61,7 +63,6 @@ void xiaozhi_init_received(const char *arg1)
 
 void xiaozhi_application_received(const char *str) {
     static bool is_led_flag = false;
-    //ESP_LOGE("adasd", "%s", str);
     strcpy(sleep_buff, str);
     if (is_led_flag) {
         if (strstr(sleep_buff, "idle") != NULL) {
@@ -219,11 +220,9 @@ static void ai_IMG_Task(void *arg) {
             xSemaphoreGive(ai_img_while_semap);    
         } else if (get_bit_button(even, 3)) {              
             auto &app = Application::GetInstance();
-            if (strstr(sleep_buff, "idle") != NULL) 
-            {
+            if (strstr(sleep_buff, "idle") != NULL) {
 
-            } else if (strstr(sleep_buff, "listening") != NULL) 
-            {
+            } else if (strstr(sleep_buff, "listening") != NULL) {
                 app.ToggleChatState();
             } else if (strstr(sleep_buff, "speaking") != NULL) {
                 app.ToggleChatState();
@@ -239,9 +238,11 @@ void key_wakeUp_user_Task(void *arg) {
     for (;;) {
         EventBits_t even = xEventGroupWaitBits(GP4ButtonGroups, (0x01), pdTRUE, pdFALSE, pdMS_TO_TICKS(2000));
         if (even & 0x01) {
-            gpio_set_level((gpio_num_t) 45, 0);
-            std::string wake_word = "你好小智";
-            Application::GetInstance().WakeWordInvoke(wake_word);
+            if (strstr(sleep_buff, "idle") != NULL) {
+                gpio_set_level((gpio_num_t) 45, 0);
+                std::string wake_word = "你好小智";
+                Application::GetInstance().WakeWordInvoke(wake_word);
+            }
         }
     }
 }
@@ -299,5 +300,5 @@ void User_xiaozhi_app_init(void)                        // Initialization in the
     xTaskCreate(ai_IMG_Task, "ai_IMG_Task", 6 * 1024, str_ai_chat_buff, 2, NULL);
     xTaskCreate(ai_IMG_LoopTask, "ai_IMG_LoopTask", 4 * 1024, NULL, 2, NULL);
     xTaskCreate(key_wakeUp_user_Task, "key_wakeUp_user_Task", 4 * 1024, NULL, 3, NULL); 
-    xTaskCreate(pwr_sleep_user_Task, "pwr_sleep_user_Task", 4 * 1024, NULL, 3, NULL);   
+    xTaskCreate(pwr_sleep_user_Task, "pwr_sleep_user_Task", 4 * 1024, NULL, 3, NULL); 
 }

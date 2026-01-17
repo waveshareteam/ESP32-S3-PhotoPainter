@@ -54,10 +54,8 @@ static void Network_user_Task(void *arg) {
 static void Network_sleep_Task(void *arg) {
     size_t time = 0;
     for (;;) {
-        EventBits_t even =
-            xEventGroupWaitBits(sleep_group, set_bit_all, pdFALSE, pdFALSE, pdMS_TO_TICKS(1000));
-        if (get_bit_button(even, 0)) 
-        {
+        EventBits_t even = xEventGroupWaitBits(sleep_group, set_bit_all, pdFALSE, pdFALSE, pdMS_TO_TICKS(1000));
+        if (get_bit_button(even, 0)) {
             vTaskDelay(pdMS_TO_TICKS(500));
             time++;
             if (time == 60) {
@@ -70,8 +68,7 @@ static void Network_sleep_Task(void *arg) {
                 vTaskDelay(pdMS_TO_TICKS(500));                        
                 esp_deep_sleep_start();                          
             }
-        } else if (get_bit_button(even, 1)) 
-        {
+        } else if (get_bit_button(even, 1)) {
             time = 0;
             xEventGroupClearBits(sleep_group, rset_bit_data(1)); 
         }
@@ -94,8 +91,7 @@ static void get_wakeup_gpio(void) {
 static void pwr_button_user_Task(void *arg) {
     for (;;) {
         EventBits_t even = xEventGroupWaitBits(PWRButtonGroups, set_bit_all, pdTRUE, pdFALSE, pdMS_TO_TICKS(2000));
-        if (get_bit_button(even, 0)) 
-        {
+        if (get_bit_button(even, 0)) {
             const uint64_t ext_wakeup_pin_3_mask = 1ULL << ext_wakeup_pin_3;
             ESP_ERROR_CHECK(esp_sleep_enable_ext1_wakeup_io(ext_wakeup_pin_3_mask, ESP_EXT1_WAKEUP_ANY_LOW)); 
             ESP_ERROR_CHECK(rtc_gpio_pulldown_dis(ext_wakeup_pin_3));

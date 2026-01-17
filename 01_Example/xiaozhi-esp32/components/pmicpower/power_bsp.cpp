@@ -122,6 +122,7 @@ void Axp2101_isChargingTask(void *arg) {
         } else if (charge_status == XPOWERS_AXP2101_CHG_STOP_STATE) {
             ESP_LOGI(TAG, "Charger Status: not charge");
         }
-        ESP_LOGI(TAG, "getBattVoltage: %d mV", axp2101.getBattVoltage());
+        ESP_LOGI(TAG, "getBattVoltage: %dmV", axp2101.getBattVoltage());
+        ESP_LOGI(TAG, "getBatteryPercent: %d%%", axp2101.getBatteryPercent());
     }
 }

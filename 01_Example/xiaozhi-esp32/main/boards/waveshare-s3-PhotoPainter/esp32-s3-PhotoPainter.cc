@@ -30,7 +30,7 @@ class waveshare_PhotoPainter : public WifiBoard {
             if (app.GetDeviceState() == kDeviceStateStarting && !WifiStation::GetInstance().IsConnected()) {
                 ResetWifiConfiguration();
             }
-            app.ToggleChatState();
+            //app.ToggleChatState();
         });
     }
 
