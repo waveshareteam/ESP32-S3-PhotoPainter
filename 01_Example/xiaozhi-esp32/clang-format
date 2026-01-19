@@ -1,4 +1,6 @@
 BasedOnStyle: LLVM
+
+# 缩进配置
 IndentWidth: 4
 TabWidth: 4
 UseTab: Never
@@ -27,5 +29,5 @@ SpacesInParentheses: false
 SpacesInSquareBrackets: false
 SpaceInEmptyParentheses: false
 
-# 最大行宽（超出会自动换行）
+# 行宽
 ColumnLimit: 1000

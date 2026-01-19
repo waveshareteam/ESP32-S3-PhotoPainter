@@ -23,14 +23,14 @@ uint8_t            Red_led_arg          = 0;      // Parameters for LED task
 static void Green_led_user_Task(void *arg) {
     uint8_t *led_arg = (uint8_t *) arg;
     for (;;) {
-        EventBits_t even = xEventGroupWaitBits(Green_led_Mode_queue, set_bit_all, pdFALSE, pdFALSE, portMAX_DELAY);
-        if (get_bit_data(even, 1)) {
+        EventBits_t even = xEventGroupWaitBits(Green_led_Mode_queue, GroupSetBitsMax, pdFALSE, pdFALSE, portMAX_DELAY);
+        if (even & GroupBit1) {
             Led_SetLevel(LED_PIN_Green, LED_ON);
             vTaskDelay(pdMS_TO_TICKS(200));
             Led_SetLevel(LED_PIN_Green, LED_OFF);
-            xEventGroupClearBits(Green_led_Mode_queue, rset_bit_data(1));
+            xEventGroupClearBits(Green_led_Mode_queue, GroupBit1);
         }
-        if (get_bit_data(even, 2)) {
+        if (even & GroupBit2) {
             Led_SetLevel(LED_PIN_Green, LED_ON);
             vTaskDelay(pdMS_TO_TICKS(200));
             Led_SetLevel(LED_PIN_Green, LED_OFF);
@@ -38,9 +38,9 @@ static void Green_led_user_Task(void *arg) {
             Led_SetLevel(LED_PIN_Green, LED_ON);
             vTaskDelay(pdMS_TO_TICKS(200));
             Led_SetLevel(LED_PIN_Green, LED_OFF);
-            xEventGroupClearBits(Green_led_Mode_queue, rset_bit_data(2));
+            xEventGroupClearBits(Green_led_Mode_queue, GroupBit2);
         }
-        if (get_bit_data(even, 3)) {
+        if (even & GroupBit3) {
             Led_SetLevel(LED_PIN_Green, LED_ON);
             vTaskDelay(pdMS_TO_TICKS(200));
             Led_SetLevel(LED_PIN_Green, LED_OFF);
@@ -52,26 +52,26 @@ static void Green_led_user_Task(void *arg) {
             Led_SetLevel(LED_PIN_Green, LED_ON);
             vTaskDelay(pdMS_TO_TICKS(200));
             Led_SetLevel(LED_PIN_Green, LED_OFF);
-            xEventGroupClearBits(Green_led_Mode_queue, rset_bit_data(3));
+            xEventGroupClearBits(Green_led_Mode_queue, GroupBit3);
         }
-        if (get_bit_data(even, 4)) {
+        if (even & GroupBit4) {
             Led_SetLevel(LED_PIN_Green, LED_ON);
-            xEventGroupClearBits(Green_led_Mode_queue, rset_bit_data(4));
+            xEventGroupClearBits(Green_led_Mode_queue, GroupBit4);
         }
-        if (get_bit_data(even, 5)) {
+        if (even & GroupBit5) {
             Led_SetLevel(LED_PIN_Green, LED_OFF);
-            xEventGroupClearBits(Green_led_Mode_queue, rset_bit_data(5));
+            xEventGroupClearBits(Green_led_Mode_queue, GroupBit5);
         }
-        if (get_bit_data(even, 6)) {
+        if (even & GroupBit6) {
             while (*led_arg) {
                 Led_SetLevel(LED_PIN_Green, LED_ON);
                 vTaskDelay(pdMS_TO_TICKS(100));
                 Led_SetLevel(LED_PIN_Green, LED_OFF);
                 vTaskDelay(pdMS_TO_TICKS(100));
             }
-            xEventGroupClearBits(Green_led_Mode_queue, rset_bit_data(6));
+            xEventGroupClearBits(Green_led_Mode_queue, GroupBit6);
         }
-        if (get_bit_data(even, 7)) 
+        if (even & GroupBit7) 
         {
             Led_SetLevel(LED_PIN_Green, LED_ON);
             vTaskDelay(pdMS_TO_TICKS(200));
@@ -88,7 +88,7 @@ static void Green_led_user_Task(void *arg) {
             Led_SetLevel(LED_PIN_Green, LED_ON);
             vTaskDelay(pdMS_TO_TICKS(200));
             Led_SetLevel(LED_PIN_Green, LED_OFF);
-            xEventGroupClearBits(Green_led_Mode_queue, rset_bit_data(7));
+            xEventGroupClearBits(Green_led_Mode_queue, GroupBit7);
         }
     }
 }
@@ -96,20 +96,28 @@ static void Green_led_user_Task(void *arg) {
 static void Red_led_user_Task(void *arg) {
     uint8_t *led_arg = (uint8_t *) arg;
     for (;;) {
-        EventBits_t even =
-            xEventGroupWaitBits(Red_led_Mode_queue, set_bit_all, pdFALSE, pdFALSE, portMAX_DELAY);
-        if (get_bit_data(even, 0)) {
+        EventBits_t even = xEventGroupWaitBits(Red_led_Mode_queue, GroupSetBitsMax, pdFALSE, pdFALSE, portMAX_DELAY);
+        if (even & GroupBit0) {
             Led_SetLevel(LED_PIN_Red, LED_ON);
-            xEventGroupClearBits(Red_led_Mode_queue, rset_bit_data(0));
+            xEventGroupClearBits(Red_led_Mode_queue, GroupBit0);
         }
-        if (get_bit_data(even, 6)) {
+        if (even & GroupBit6) {
             while (*led_arg) {
                 vTaskDelay(pdMS_TO_TICKS(100));
                 Led_SetLevel(LED_PIN_Red, LED_OFF);
                 vTaskDelay(pdMS_TO_TICKS(100));
                 Led_SetLevel(LED_PIN_Red, LED_ON);
             }
-            xEventGroupClearBits(Red_led_Mode_queue, rset_bit_data(6));
+            xEventGroupClearBits(Red_led_Mode_queue, GroupBit6);
+        }
+        if (even & GroupBit1) {
+            for(int i = 0; i < 3; i++) {
+                Led_SetLevel(LED_PIN_Red, LED_ON);
+                vTaskDelay(pdMS_TO_TICKS(200));
+                Led_SetLevel(LED_PIN_Red, LED_OFF);
+                vTaskDelay(pdMS_TO_TICKS(200));
+            }
+            xEventGroupClearBits(Red_led_Mode_queue, GroupBit1);
         }
     }
 }
@@ -118,7 +126,7 @@ static void key1_button_user_Task(void *arg) {
     esp_err_t ret;
     for (;;) {
         EventBits_t even = xEventGroupWaitBits(GP4ButtonGroups, (0x02), pdFALSE, pdFALSE, pdMS_TO_TICKS(2000));
-        if (get_bit_button(even, 1)) { 
+        if (even & GroupBit1) { 
             nvs_handle_t my_handle;
             ret = nvs_open("PhotoPainter", NVS_READWRITE, &my_handle);
             ESP_ERROR_CHECK(ret);
@@ -126,7 +134,7 @@ static void key1_button_user_Task(void *arg) {
             ret                = nvs_get_u8(my_handle, "Mode_Flag", &Mode_value);
             ESP_ERROR_CHECK(ret);
             if (Mode_value == 0x01) { 
-                xEventGroupClearBits(GP4ButtonGroups, set_bit_button(1));
+                xEventGroupClearBits(GP4ButtonGroups, GroupBit1);
                 ret = nvs_set_u8(my_handle, "Mode_Flag", 0x00);
                 ESP_ERROR_CHECK(ret);
                 ret = nvs_set_u8(my_handle, "PhotPainterMode", 0x04);

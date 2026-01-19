@@ -11,6 +11,7 @@ idf_component_register(
     "./jpg_src/image_io.c"
     "./jpg_src/test_decoder.c"
     PRIV_REQUIRES
+    espressif__mdns
     espressif__esp_new_jpeg 
     esp_http_client
     port_bsp

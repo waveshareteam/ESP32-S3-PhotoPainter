@@ -16,7 +16,7 @@ static void key1_button_user_Task(void *arg) {
     uint8_t   Mode = 0;
     for (;;) {
         EventBits_t even = xEventGroupWaitBits(GP4ButtonGroups, (0x02) | (0x01), pdTRUE, pdFALSE, pdMS_TO_TICKS(2000));
-        if (get_bit_button(even, 1)) {
+        if (even & GroupBit1) {
             if (Mode > 0) {
                 nvs_handle_t my_handle;
                 ret = nvs_open("PhotoPainter", NVS_READWRITE, &my_handle);
@@ -52,17 +52,17 @@ static void key1_button_user_Task(void *arg) {
                 AudioPort->Codec_SetCodecReg("es7210", 0x00, 0x32);
                 esp_restart();
             }
-        } else if (get_bit_button(even, 0)) { 
+        } else if (even & GroupBit0) { 
             Mode++;
             if (Mode > 3) {
                 Mode = 1;
             }
             if (Mode == 1) {
-                xEventGroupSetBits(audio_groups, set_bit_button(1));
+                xEventGroupSetBits(audio_groups, GroupBit1);
             } else if (Mode == 2) {
-                xEventGroupSetBits(audio_groups, set_bit_button(2));
+                xEventGroupSetBits(audio_groups, GroupBit2);
             } else if (Mode == 3) {
-                xEventGroupSetBits(audio_groups, set_bit_button(3));
+                xEventGroupSetBits(audio_groups, GroupBit3);
             }
         }
     }
@@ -72,14 +72,14 @@ static void audio_user_Task(void *arg) {
     AudioPort->Codec_PlayInfoAudio();
     int value = 0;
     for (;;) {
-        EventBits_t even = xEventGroupWaitBits(audio_groups, set_bit_all, pdTRUE, pdFALSE, pdMS_TO_TICKS(3000));
-        if (get_bit_button(even, 0)) { 
+        EventBits_t even = xEventGroupWaitBits(audio_groups, GroupSetBitsMax, pdTRUE, pdFALSE, pdMS_TO_TICKS(3000));
+        if (even & GroupBit0) { 
             value = 0;
-        } else if (get_bit_button(even, 1)) {
+        } else if (even & GroupBit1) {
             value = 1;
-        } else if (get_bit_button(even, 2)) {
+        } else if (even & GroupBit2) {
             value = 2;
-        } else if (get_bit_button(even, 3)) {
+        } else if (even & GroupBit3) {
             value = 3;
         }
         int      bytes_write = 0;
@@ -96,7 +96,7 @@ static void audio_user_Task(void *arg) {
 void Mode_Selection_Init(void) {
     AudioPort    = new CodecPort(I2cBus);
     audio_groups = xEventGroupCreate();
-    xEventGroupSetBits(audio_groups, set_bit_button(0));
+    xEventGroupSetBits(audio_groups, GroupBit0);
     xTaskCreate(key1_button_user_Task, "key1_button_user_Task", 4 * 1024, NULL, 3, NULL);
     xTaskCreate(audio_user_Task, "audio_user_Task", 4 * 1024, NULL, 3, NULL);
 }

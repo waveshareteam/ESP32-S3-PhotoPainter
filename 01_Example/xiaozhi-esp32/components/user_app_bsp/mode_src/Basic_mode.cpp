@@ -25,8 +25,8 @@ static list_t* ListHost;
 
 static void pwr_button_user_Task(void *arg) {
     for (;;) {
-        EventBits_t even = xEventGroupWaitBits(PWRButtonGroups, set_bit_all, pdTRUE, pdFALSE, pdMS_TO_TICKS(2000));
-        if (get_bit_button(even, 0))
+        EventBits_t even = xEventGroupWaitBits(PWRButtonGroups, GroupSetBitsMax, pdTRUE, pdFALSE, pdMS_TO_TICKS(2000));
+        if (even & GroupBit0)
         {
             const uint64_t ext_wakeup_pin_1_mask = 1ULL << ext_wakeup_pin_1;
             const uint64_t ext_wakeup_pin_3_mask = 1ULL << ext_wakeup_pin_3;
@@ -45,8 +45,8 @@ static void boot_button_user_Task(void *arg) {
     uint8_t *wakeup_arg = (uint8_t *) arg;
     ePaperDisplay.EPD_Init();
     for (;;) {
-        EventBits_t even = xEventGroupWaitBits(BootButtonGroups, set_bit_all, pdTRUE, pdFALSE, pdMS_TO_TICKS(2000));
-        if (get_bit_button(even, 0)) {
+        EventBits_t even = xEventGroupWaitBits(BootButtonGroups, GroupSetBitsMax, pdTRUE, pdFALSE, pdMS_TO_TICKS(2000));
+        if (even & GroupBit0) {
             if (*wakeup_arg == 0) {
                 if (pdTRUE == xSemaphoreTake(epaper_gui_semapHandle, 2000)) {                       
                     list_node_t *sdcard_node = list_at(ListHost, sdcard_Basic_count); 
@@ -58,7 +58,7 @@ static void boot_button_user_Task(void *arg) {
                     sdcard_Basic_count++;
                     if (sdcard_node != NULL) 
                     {
-                        xEventGroupSetBits(Green_led_Mode_queue,set_bit_button(6));
+                        xEventGroupSetBits(Green_led_Mode_queue,GroupBit6);
                         Green_led_arg                   = 1;
                         CustomSDPortNode_t *sdcard_Name_node = (CustomSDPortNode_t *) sdcard_node->val;
                         ePaperDisplay.EPD_SDcardBmpShakingColor(sdcard_Name_node->sdcard_name,0,0);
@@ -100,12 +100,12 @@ static void get_wakeup_gpio(void) {
         if (wakeup_pins == 0)
             return;
         if (wakeup_pins & (1ULL << ext_wakeup_pin_1)) {
-            xEventGroupSetBits(BootButtonGroups, set_bit_button(0)); 
+            xEventGroupSetBits(BootButtonGroups, GroupBit0); 
         } else if (wakeup_pins & (1ULL << ext_wakeup_pin_3)) {
             return;
         }
     } else if (ESP_SLEEP_WAKEUP_TIMER == wakeup_reason) {
-        xEventGroupSetBits(BootButtonGroups, set_bit_button(0)); 
+        xEventGroupSetBits(BootButtonGroups, GroupBit0); 
     }
 }
 
@@ -113,7 +113,7 @@ void User_Basic_mode_app_init(void) {
     ListHost = SDPort->SDPort_GetListHost();
     sleep_Semp  = xSemaphoreCreateBinary();
     BaseAIModel model(SDPort);
-    xEventGroupSetBits(Red_led_Mode_queue, set_bit_button(0));  
+    xEventGroupSetBits(Red_led_Mode_queue, GroupBit0);  
     BaseAIModelConfig_t *AIModelConfig = NULL;
     AIModelConfig = model.BaseAIModel_SdcardReadAIModelConfig();
     if (AIModelConfig != NULL) {                            

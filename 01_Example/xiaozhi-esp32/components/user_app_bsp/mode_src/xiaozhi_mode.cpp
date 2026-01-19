@@ -47,7 +47,7 @@ void xiaozhi_init_received(const char *arg1)
         Oneime          = 1;
         const char *str = auto_get_weather_json();
         ESP_LOGW("xiaozhi_init","received arg:%s",arg1);
-        xEventGroupSetBits(Red_led_Mode_queue, set_bit_button(0));
+        xEventGroupSetBits(Red_led_Mode_queue, GroupBit0);
         if(str == NULL) {
             ESP_LOGE("xiaozhi_init","json decoding failed");
             return;
@@ -57,7 +57,7 @@ void xiaozhi_init_received(const char *arg1)
             ESP_LOGE("xiaozhi_init","WeatherData is NULL");
             return;
         }     
-        xEventGroupSetBits(epaper_groups, set_bit_button(0));
+        xEventGroupSetBits(epaper_groups, GroupBit0);
     }
 }
 
@@ -88,14 +88,13 @@ static void gui_user_Task(void *arg) {
     int *sdcard_doc = (int *) arg;
     ePaperDisplay.EPD_Init();
     for (;;) {
-        EventBits_t even = xEventGroupWaitBits(epaper_groups, set_bit_all, pdTRUE, pdFALSE, portMAX_DELAY); 
+        EventBits_t even = xEventGroupWaitBits(epaper_groups, GroupSetBitsMax, pdTRUE, pdFALSE, portMAX_DELAY); 
         if (pdTRUE == xSemaphoreTake(epaper_gui_semapHandle, 2000))                                         
         {
-            xEventGroupSetBits(Green_led_Mode_queue, set_bit_button(6));
+            xEventGroupSetBits(Green_led_Mode_queue, GroupBit6);
             Green_led_arg = 1;
             is_ai_img     = 0;           
-            if (get_bit_button(even, 0)) 
-            {
+            if (even & GroupBit0) {
                 vTaskDelay(pdMS_TO_TICKS(3000));  
                 char      *strURL = NULL;
                 WeatherAqi_t aqi_data;
@@ -159,7 +158,7 @@ static void gui_user_Task(void *arg) {
 
                 ePaperDisplay.EPD_Display();
                 //heap_caps_free(WeatherData);
-            } else if (get_bit_button(even, 1)) {
+            } else if (even & GroupBit1) {
                 xEventGroupClearBits(ai_IMG_LoopGroup, 0x01);  
                 *sdcard_doc -= 1;
                 list_node_t *sdcard_node = list_at(ListHost, *sdcard_doc); 
@@ -170,7 +169,7 @@ static void gui_user_Task(void *arg) {
                     ePaperDisplay.EPD_SDcardBmpShakingColor(sdcard_Name_node->sdcard_name,0,0);
                     ePaperDisplay.EPD_Display();
                 }
-            } else if (get_bit_button(even, 2)) { 
+            } else if (even & GroupBit2) { 
                 xEventGroupClearBits(ai_IMG_LoopGroup, 0x01);                       
                 list_node_t *node = list_at(ListHost, -1);
                 if (node != NULL) {
@@ -179,7 +178,7 @@ static void gui_user_Task(void *arg) {
                     ePaperDisplay.EPD_SDcardBmpShakingColor(sdcard_Name_node_ai->sdcard_name,0,0);
                     ePaperDisplay.EPD_Display();
                 }
-            } else if (get_bit_button(even, 3)) {
+            } else if (even & GroupBit3) {
                 img_loopCount--;                  
                 list_node_t *node = list_at(ListHost, img_loopCount);
                 if (node != NULL) {
@@ -203,7 +202,7 @@ static void ai_IMG_Task(void *arg) {
     char *chatStr = (char *) arg;
     for (;;) {
         EventBits_t even = xEventGroupWaitBits(ai_IMG_Group, (0x01) | (0x02) | (0x08), pdTRUE, pdFALSE, portMAX_DELAY);
-        if (get_bit_button(even, 0)) {
+        if (even & GroupBit0) {
             ESP_LOGW("chat", "%s", chatStr);
             AiModel->BaseAIModel_SetChat(chatStr);         
             char *str = AiModel->BaseAIModel_GetImgName();
@@ -213,12 +212,12 @@ static void ai_IMG_Task(void *arg) {
                 assert(sdcard_node_data);
                 strcpy(sdcard_node_data->sdcard_name, str);
                 list_rpush(ListHost, list_node_new(sdcard_node_data)); 
-                xEventGroupSetBits(epaper_groups, set_bit_button(2));                
+                xEventGroupSetBits(epaper_groups, GroupBit2);                
             }
-        } else if (get_bit_button(even, 1)) {
+        } else if (even & GroupBit1) {
             sdcard_bmp_Quantity = SDPort->SDPort_GetScanListValue(); 
             xSemaphoreGive(ai_img_while_semap);    
-        } else if (get_bit_button(even, 3)) {              
+        } else if (even & GroupBit3) {              
             auto &app = Application::GetInstance();
             if (strstr(sleep_buff, "idle") != NULL) {
 
@@ -269,8 +268,8 @@ char* Get_TemperatureHumidity(void) {
 void ai_IMG_LoopTask(void *arg) {
     for (;;) {
         EventBits_t even = xEventGroupWaitBits(ai_IMG_LoopGroup, (0x01), pdFALSE, pdFALSE, portMAX_DELAY);
-        if (get_bit_button(even, 0)) {
-            xEventGroupSetBits(epaper_groups, set_bit_button(3)); 
+        if (even & GroupBit0) {
+            xEventGroupSetBits(epaper_groups, GroupBit3); 
         }
         vTaskDelay(pdMS_TO_TICKS(img_loopTimer));
     }

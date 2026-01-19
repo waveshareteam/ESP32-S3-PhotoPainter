@@ -26,7 +26,7 @@ static Button PWRButton;
 
 /*******************Callback event declaration***************/
 static void on_boot_single_click(Button *btn_handle) {
-    xEventGroupSetBits(BootButtonGroups, set_bit_button(0));
+    xEventGroupSetBits(BootButtonGroups, GroupBit0);
 }
 
 static void on_boot_double_click(Button *btn_handle) {
@@ -34,23 +34,23 @@ static void on_boot_double_click(Button *btn_handle) {
 }
 
 static void on_boot_long_press_start(Button *btn_handle) {
-    xEventGroupSetBits(BootButtonGroups, set_bit_button(1));
+    xEventGroupSetBits(BootButtonGroups, GroupBit1);
 }
 
 static void on_boot_press_repeat(Button *btn_handle) {
-    xEventGroupSetBits(BootButtonGroups, set_bit_button(2));
+    xEventGroupSetBits(BootButtonGroups, GroupBit2);
 }
 
 static void on_boot_press_up(Button *btn_handle) {
-    xEventGroupSetBits(BootButtonGroups, set_bit_button(3));
+    xEventGroupSetBits(BootButtonGroups, GroupBit3);
 }
 
 static void on_pwr_single_click(Button *btn_handle) {
-    xEventGroupSetBits(PWRButtonGroups, set_bit_button(0));
+    xEventGroupSetBits(PWRButtonGroups, GroupBit0);
 }
 
 static void on_gp4_single_click(Button *btn_handle) {
-    xEventGroupSetBits(GP4ButtonGroups, set_bit_button(0));
+    xEventGroupSetBits(GP4ButtonGroups, GroupBit0);
 }
 
 static void on_gp4_double_click(Button *btn_handle) {
@@ -58,11 +58,11 @@ static void on_gp4_double_click(Button *btn_handle) {
 }
 
 static void on_gp4_long_press_start(Button *btn_handle) {
-    xEventGroupSetBits(GP4ButtonGroups, set_bit_button(1));
+    xEventGroupSetBits(GP4ButtonGroups, GroupBit1);
 }
 
 static void on_gp4_press_up(Button *btn_handle) {
-    xEventGroupSetBits(GP4ButtonGroups, set_bit_button(2));
+    xEventGroupSetBits(GP4ButtonGroups, GroupBit2);
 }
 
 /*********************************************/
