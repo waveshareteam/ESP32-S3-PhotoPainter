@@ -188,14 +188,15 @@ void CustomSDPort::SDPort_ScanListDir(const char *path) {
                 continue;
             }
             uint16_t       _strlen   = strlen(path) + strlen(entry->d_name) + 1 + 1; 
-            CustomSDPortNode_t *node_data = (CustomSDPortNode_t *) LIST_MALLOC(sizeof(CustomSDPortNode_t));
-            assert(node_data);
-            if (_strlen > 96) {
+            if (_strlen >= 80) {
                 ESP_LOGE(TAG, "scan file fill _strlen:%d", _strlen);
                 continue;
             }
-            snprintf(node_data->sdcard_name, sizeof(node_data->sdcard_name) - 2, "%s/%s", path, entry->d_name); 
+            CustomSDPortNode_t *node_data = (CustomSDPortNode_t *) LIST_MALLOC(sizeof(CustomSDPortNode_t));
+            assert(node_data);
+            snprintf(node_data->sdcard_name, sizeof(node_data->sdcard_name), "%s/%s", path, entry->d_name); 
             list_rpush(ScanListHandle, list_node_new(node_data)); 
+            ESP_LOGW("Scan_Dir","DirDoc:%s,size:%d",node_data->sdcard_name,strlen(node_data->sdcard_name));
             ImgValue++;                                      
         }
     }
