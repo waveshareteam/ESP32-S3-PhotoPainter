@@ -10,14 +10,15 @@
 typedef struct {
     char *buffer;
     int buffer_len;
+    int buffer_size;
 } http_response_t;
 
 typedef struct 
 {
     int time;
-    char url[100];
-    char model[100];
-    char key[100];
+    char url[256];
+    char model[128];
+    char key[256];
 }BaseAIModelConfig_t;
 
 class BaseAIModel
@@ -43,7 +44,7 @@ private:
     BaseAIModelConfig_t* AIModelConfig;
     http_response_t AIresponse = {0};
 
-    static int BaseAIModel_HttpCallbackFun(esp_http_client_event_t *evt);
+    static esp_err_t BaseAIModel_HttpCallbackFun(esp_http_client_event_t *evt);
     const char* BaseAIModel_GetImgURL();                                            // Obtain the URL of the generated image
     uint8_t* BaseAIModel_DownloadImgToPsram(const char *strurl, int *out_len);      // Download the JPG image from the URL and save it to the PSRAM
     uint8_t BaseAIModel_PsramToSdcard(char *strPath,uint8_t *buffer,int len);       // Copy the data from the PSRAM to the SD card
@@ -58,5 +59,4 @@ public:
     char *BaseAIModel_GetImgName();                                                 // Obtain the path of the last generated BMP file on the SDcard
     char *Get_AiTFImgName() {return sdcard_path;}
 };
-
 

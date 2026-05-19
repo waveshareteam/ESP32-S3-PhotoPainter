@@ -170,7 +170,7 @@ static void gui_user_Task(void *arg) {
                     ePaperDisplay.EPD_Display();
                 }
             } else if (get_bit_button(even, 2)) {                     
-                ePaperDisplay.EPD_SDcardBmpShakingColor(AiModel->Get_AiTFImgName(),0,0);
+                ePaperDisplay.EPD_SDcardScaleIMGShakingColor(AiModel->Get_AiTFImgName(),0,0);
                 ePaperDisplay.EPD_Display();
             } else if (get_bit_button(even, 3)) {
                 img_loopCount--;                  

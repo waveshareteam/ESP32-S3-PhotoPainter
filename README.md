@@ -7,7 +7,14 @@
 - 固件烧录说明链接: [前往点击展开浏览](https://www.waveshare.net/wiki/ESP32-S3-PhotoPainter#.E7.83.A7.E5.BD.95.E5.9B.BA.E4.BB.B6.E8.AF.B4.E6.98.8E)
 - Firmware burning instructions link: [Click here to expand and view](https://www.waveshare.com/wiki/ESP32-S3-PhotoPainter#Firmware_Flashing_Instructions)
 
+## Model Selection
+### [1.5.0] 2026/05/20
+- Select Volcano Ark Model, Model: Doubao-Seedream-4.0
+
 ## Change log
+
+### [1.5.0] 2026/05/20
+- Mainly updated large models and re-adapted AI image generation based on large models
 
 ### [1.4.0] 2026/04/02
 - Add Arduino example code for audio playback and recording.
@@ -45,7 +52,15 @@
 - Expanded the storage cache capacity for TF card file names to 80 bytes to accommodate scenarios with longer file naming conventions;
 - Fixed the display anomaly where the device screen presents a blank screen when the TF card image reading operation fails.
 
+## 大模型选择
+
+### [1.5.0] 2026/05/20
+- 选择火山方舟模型,模型选择:Doubao-Seedream-4.0
+
 ## 更新日志
+
+### [1.5.0] 2026/05/20
+- 主要针对大模型更新,重新适配大模型AI生图
 
 ### [1.4.0] 2026/04/02
 - 添加播放和录音的arduino示例代码
